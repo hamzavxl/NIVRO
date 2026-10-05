@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NIVRO Engine Releases | Automated Cloud OS Deployment</title>
+  <meta name="description" content="Official release distribution channel for NIVRO automated unattended operating system deployment engine.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(16, 23, 38, 0.7);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(59, 130, 246, 0.4);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.25);
+      --code-bg: #030712;
+      --success: #10b981;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.6;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+      width: 100%;
+    }
+    header {
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #60a5fa;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--success);
+    }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p.lead {
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      max-width: 680px;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 2.5rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .cmd-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      position: relative;
+      overflow-x: auto;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .cmd-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      color: #38bdf8;
+      line-height: 1.5;
+    }
+    .file-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    @media (min-width: 640px) {
+      .file-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .file-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+    .file-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    .file-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .file-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #f8fafc;
+    }
+    .file-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .file-tag {
+      font-size: 0.7rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      color: #cbd5e1;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    footer {
+      margin-top: auto;
+      border-top: 1px solid var(--border);
+      padding: 2rem 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    footer a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">
+        <span class="badge-dot"></span>
+        GitHub Pages Edge Distribution
+      </div>
+      <h1>NIVRO Engine Releases</h1>
+      <p class="lead">
+        High-performance, automated unattended operating system deployment engine for KVM, Xen, and Bare-Metal cloud servers.
+      </p>
+    </header>
+
+    <main>
+      <h2 class="section-title">⚡ Fast Bootstrap Command</h2>
+      <div class="cmd-box">
+        <div class="cmd-header">
+          <span>Global CDN Endpoint (Fastly / Cloudflare)</span>
+          <span>BASH</span>
+        </div>
+        <pre>curl -sSL https://hamzavxl.github.io/NIVRO/reinstall.sh | bash</pre>
+      </div>
+
+      <h2 class="section-title">📦 Core Deployment Artifacts</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+        These release artifacts are pulled during automated VPS provisioning workflows.
+      </p>
+      
+      <div class="file-grid">
+        <a href="reinstall.sh" class="file-card">
+          <div class="file-info">
+            <span class="file-name">reinstall.sh</span>
+            <span class="file-desc">Primary unattended OS installer & auto-healer</span>
+          </div>
+          <span class="file-tag">BASH</span>
+        </a>
+        <a href="trans.sh" class="file-card">
+          <div class="file-info">
+            <span class="file-name">trans.sh</span>
+            <span class="file-desc">RAM bootstrap & kexec execution engine</span>
+          </div>
+          <span class="file-tag">BASH</span>
+        </a>
+        <a href="initrd-network.sh" class="file-card">
+          <div class="file-info">
+            <span class="file-name">initrd-network.sh</span>
+            <span class="file-desc">Static IP & gateway preservation routines</span>
+          </div>
+          <span class="file-tag">SHELL</span>
+        </a>
+        <a href="windows-driver-utils.sh" class="file-card">
+          <div class="file-info">
+            <span class="file-name">windows-driver-utils.sh</span>
+            <span class="file-desc">Red Hat VirtIO storage & network injector</span>
+          </div>
+          <span class="file-tag">BASH</span>
+        </a>
+        <a href="wmic.ps1" class="file-card">
+          <div class="file-info">
+            <span class="file-name">wmic.ps1</span>
+            <span class="file-desc">Modern PowerShell hardware probe utility</span>
+          </div>
+          <span class="file-tag">PS1</span>
+        </a>
+        <a href="debian.cfg" class="file-card">
+          <div class="file-info">
+            <span class="file-name">debian.cfg</span>
+            <span class="file-desc">Unattended preseed automated partition recipe</span>
+          </div>
+          <span class="file-tag">CONFIG</span>
+        </a>
+      </div>
+
+      <h2 class="section-title" style="margin-top: 3rem;">🛡️ Technical Guarantees</h2>
+      <ul style="color: var(--text-muted); font-size: 0.9rem; padding-left: 1.5rem; line-height: 2;">
+        <li><strong style="color: var(--text);">Zero Rate Limiting:</strong> Hosted directly on GitHub Pages global edge cache for maximum availability.</li>
+        <li><strong style="color: var(--text);">Network Auto-Healing:</strong> Static IP, gateway, subnet mask, and DNS configurations preserved before partition formatting.</li>
+        <li><strong style="color: var(--text);">VirtIO Acceleration:</strong> Automatic driver injection ensuring 100% disk detection on budget KVM hypervisors.</li>
+        <li><strong style="color: var(--text);">Stealth Camouflage:</strong> Linux SSH emulation on port 22 bypassing cloud network security blocks.</li>
+      </ul>
+    </main>
+
+    <footer>
+      <p>NIVRO Cloud Infrastructure • Powered by <a href="https://github.com/hamzavxl/NIVRO" target="_blank" rel="noopener">GitHub</a></p>
+    </footer>
+  </div>
+</body>
+</html>
