@@ -13,9 +13,8 @@ Official release repository for **NIVRO**, an automated operating system deploym
 
 This repository hosts release artifacts and bootstrap components used by the NIVRO platform during user-initiated operating system deployment workflows.
 
-Official Web Portal: https://nivro.top  
+Official Developer & Inquiries: Telegram @V_X_L1  
 Documentation & Releases: https://hamzavxl.github.io/NIVRO/  
-Core Developer: Telegram @V_X_L1  
 
 ---
 
@@ -73,7 +72,7 @@ NIVRO enforces an automated License & Token Gate to protect high-speed bandwidth
 ### Free Community Tier
 - Purpose: Evaluation and recovery of budget VPS instances.
 - Pricing: 100% Free.
-- Authorization: Generated via one-click temporary session token at https://nivro.top
+- Authorization: Generated via one-click temporary session token through the official platform.
 - Supported Distributions:
   - Windows Server 2012 R2 Datacenter
   - Windows 8.1 Professional
@@ -99,22 +98,17 @@ NIVRO enforces an automated License & Token Gate to protect high-speed bandwidth
 
 ## How to Obtain a License
 
-Official VIP Enterprise License Keys (CDKs) can be acquired through:
+Official VIP Enterprise License Keys (CDKs) can be acquired directly via:
 
-1. Direct Developer Purchase (Fast Processing & Crypto):
-   - Telegram: @V_X_L1
-   - Supported methods: Binance Pay (USDT), Litecoin, Bitcoin, and direct transfers.
-
-2. Official Web Checkout:
-   - Web: https://nivro.top
-   - Automated checkout with Binance Pay and instant key delivery.
+- Telegram Lead Developer: @V_X_L1
+- Supported payment methods: Binance Pay (USDT), Litecoin, Bitcoin, and direct transfers.
 
 ---
 
 ## Installation Commands
 
 ### Option A: Free Community Deployment
-Visit https://nivro.top, select an evaluation distribution, and execute the generated command:
+Execute the generated command with your active session token:
 
 ```bash
 curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- <distro> --token <YOUR_SESSION_TOKEN>
@@ -152,5 +146,5 @@ curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- debian 12 \
 ## Support & Contact
 
 - Lead Developer: Telegram @V_X_L1
-- Service Portal: https://nivro.top
 - Repository: https://github.com/hamzavxl/NIVRO
+- Distribution Channel: https://hamzavxl.github.io/NIVRO/

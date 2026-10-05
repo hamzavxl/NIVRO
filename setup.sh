@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # NIVRO Automated Deployment Engine — Bootstrap Loader
-# Official Website: https://nivro.top
 # CDN Endpoint:    https://hamzavxl.github.io/NIVRO/
 # Developer:       Telegram @V_X_L1
 # ==============================================================================
@@ -59,14 +58,12 @@ if [ "$HAS_AUTH" -eq 0 ]; then
     echo "[!] A valid NIVRO License Key (CDK) or Website Token is strictly required."
     echo ""
     echo "[*] FREE COMMUNITY EVALUATION:"
-    echo "    Generate a 1-click free installation command at our official portal:"
-    echo "    => https://nivro.top"
+    echo "    Generate a 1-click free installation command through our official platform."
     echo "    - Allowed Free Distros: Windows Server 2012 R2, Windows 8.1 Pro, Alpine Linux"
     echo ""
     echo "[*] VIP ENTERPRISE LICENSE (CDK):"
     echo "    Purchase high-speed licenses (Windows 11 LTSC, Server 2025, Stealth Port 22):"
     echo "    => Official Developer on Telegram: @V_X_L1"
-    echo "    => Automated Instant Web Portal: https://nivro.top"
     echo ""
     echo "Usage Examples:"
     echo "    bash setup.sh <distro> --key <YOUR-CDK-KEY>"
