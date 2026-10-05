@@ -105,32 +105,19 @@ Official VIP Enterprise License Keys (CDKs) can be acquired directly via:
 
 ---
 
-## Installation Commands
+## Installation Command
 
-### Option A: Free Community Deployment
-Execute the generated command with your active session token:
+NIVRO executes deployments via a single encrypted bootstrap command. All provisioning parameters (operating system image, Red Hat VirtIO driver injection, static network auto-healing, user credentials, and stealth port 22 camouflage) are securely resolved through your authorized setup key:
 
 ```bash
-curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- <distro> --token <YOUR_SESSION_TOKEN>
+curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- NV-SEC-8F7B2C91-4E1D0F8A-3C9B7E1D-5A8F2C0B-9E3D6A1F
 ```
 
-### Option B: VIP Enterprise Deployment
-Execute the bootstrap loader directly on the target server with your authorized license key:
+For custom manual invocation or evaluation tokens, keys can also be supplied via flags:
 
-Windows Deployment:
 ```bash
-curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- windows \
-  --image-name "Windows 11 Enterprise LTSC" \
-  --password "YourAdminPassword123" \
-  --rdp-port 22 \
-  --key "NIVRO-XXXX-XXXX-XXXX"
-```
-
-Linux Deployment:
-```bash
-curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- debian 12 \
-  --password "YourAdminPassword123" \
-  --key "NIVRO-XXXX-XXXX-XXXX"
+curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- --key <YOUR-SETUP-KEY>
+curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- --token <YOUR-SESSION-TOKEN>
 ```
 
 ---

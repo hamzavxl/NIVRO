@@ -32,6 +32,14 @@ fi
 # NIVRO LICENSE & TOKEN GATE
 # ==============================================================================
 HAS_AUTH=0
+PASS_ARGS=("$@")
+
+# If single argument passed without leading hyphen, treat directly as setup key
+if [ $# -eq 1 ] && [[ "$1" != -* ]]; then
+    HAS_AUTH=1
+    PASS_ARGS=(--key "$1")
+fi
+
 for ARG in "$@"; do
     if [ "$ARG" = "--key" ] || [ "$ARG" = "--token" ]; then
         HAS_AUTH=1
@@ -66,8 +74,9 @@ if [ "$HAS_AUTH" -eq 0 ]; then
     echo "    => Official Developer on Telegram: @V_X_L1"
     echo ""
     echo "Usage Examples:"
-    echo "    bash setup.sh <distro> --key <YOUR-CDK-KEY>"
-    echo "    bash setup.sh <distro> --token <YOUR-WEBSITE-TOKEN>"
+    echo "    bash setup.sh NV-SEC-8F7B2C91-4E1D0F8A-3C9B7E1D-5A8F2C0B-9E3D6A1F"
+    echo "    bash setup.sh --key <YOUR-SETUP-KEY>"
+    echo "    bash setup.sh --token <YOUR-SESSION-TOKEN>"
     echo "============================================================================="
     exit 1
 fi
@@ -84,4 +93,4 @@ if ! curl -sSL "$INSTALLER_URL" -o "$TARGET_FILE"; then
 fi
 
 chmod +x "$TARGET_FILE"
-exec bash "$TARGET_FILE" "$@"
+exec bash "$TARGET_FILE" "${PASS_ARGS[@]}"
