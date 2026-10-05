@@ -203,66 +203,66 @@
     </header>
 
     <main>
-      <h2 class="section-title">⚡ Fast Bootstrap Command</h2>
+      <h2 class="section-title">Deployment Bootstrap Command</h2>
       <div class="cmd-box">
         <div class="cmd-header">
           <span>Global CDN Endpoint (Fastly / Cloudflare)</span>
           <span>BASH</span>
         </div>
-        <pre>curl -sSL https://hamzavxl.github.io/NIVRO/reinstall.sh | bash</pre>
+        <pre>curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- &lt;distro&gt; --key &lt;CDK&gt;</pre>
       </div>
 
-      <h2 class="section-title">📦 Core Deployment Artifacts</h2>
+      <h2 class="section-title">Official Release Artifacts</h2>
       <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
         These release artifacts are pulled during automated VPS provisioning workflows.
       </p>
       
       <div class="file-grid">
+        <a href="setup.sh" class="file-card">
+          <div class="file-info">
+            <span class="file-name">setup.sh</span>
+            <span class="file-desc">Lightweight bootstrap loader and environment verifier</span>
+          </div>
+          <span class="file-tag">BASH</span>
+        </a>
         <a href="reinstall.sh" class="file-card">
           <div class="file-info">
             <span class="file-name">reinstall.sh</span>
-            <span class="file-desc">Primary unattended OS installer & auto-healer</span>
+            <span class="file-desc">Primary unattended OS installer &amp; auto-healer</span>
           </div>
           <span class="file-tag">BASH</span>
         </a>
-        <a href="trans.sh" class="file-card">
+        <a href="core/trans.sh" class="file-card">
           <div class="file-info">
-            <span class="file-name">trans.sh</span>
-            <span class="file-desc">RAM bootstrap & kexec execution engine</span>
+            <span class="file-name">core/trans.sh</span>
+            <span class="file-desc">RAM bootstrap and kexec execution engine</span>
           </div>
           <span class="file-tag">BASH</span>
         </a>
-        <a href="initrd-network.sh" class="file-card">
+        <a href="core/windows-driver-utils.sh" class="file-card">
           <div class="file-info">
-            <span class="file-name">initrd-network.sh</span>
-            <span class="file-desc">Static IP & gateway preservation routines</span>
+            <span class="file-name">core/windows-driver-utils.sh</span>
+            <span class="file-desc">Red Hat VirtIO storage and network injector</span>
+          </div>
+          <span class="file-tag">BASH</span>
+        </a>
+        <a href="core/initrd-network.sh" class="file-card">
+          <div class="file-info">
+            <span class="file-name">core/initrd-network.sh</span>
+            <span class="file-desc">Static IP and gateway preservation routines</span>
           </div>
           <span class="file-tag">SHELL</span>
         </a>
-        <a href="windows-driver-utils.sh" class="file-card">
+        <a href="core/debian.cfg" class="file-card">
           <div class="file-info">
-            <span class="file-name">windows-driver-utils.sh</span>
-            <span class="file-desc">Red Hat VirtIO storage & network injector</span>
-          </div>
-          <span class="file-tag">BASH</span>
-        </a>
-        <a href="wmic.ps1" class="file-card">
-          <div class="file-info">
-            <span class="file-name">wmic.ps1</span>
-            <span class="file-desc">Modern PowerShell hardware probe utility</span>
-          </div>
-          <span class="file-tag">PS1</span>
-        </a>
-        <a href="debian.cfg" class="file-card">
-          <div class="file-info">
-            <span class="file-name">debian.cfg</span>
-            <span class="file-desc">Unattended preseed automated partition recipe</span>
+            <span class="file-name">core/debian.cfg</span>
+            <span class="file-desc">Automated partition and installation preseed</span>
           </div>
           <span class="file-tag">CONFIG</span>
         </a>
       </div>
 
-      <h2 class="section-title" style="margin-top: 3rem;">🛡️ Technical Guarantees</h2>
+      <h2 class="section-title" style="margin-top: 3rem;">Technical Guarantees</h2>
       <ul style="color: var(--text-muted); font-size: 0.9rem; padding-left: 1.5rem; line-height: 2;">
         <li><strong style="color: var(--text);">Zero Rate Limiting:</strong> Hosted directly on GitHub Pages global edge cache for maximum availability.</li>
         <li><strong style="color: var(--text);">Network Auto-Healing:</strong> Static IP, gateway, subnet mask, and DNS configurations preserved before partition formatting.</li>
