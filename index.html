@@ -485,7 +485,7 @@
             <span>BASH</span>
           </div>
           <div class="term-body">
-            <code class="term-code" id="cmd-text">curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- NV-SEC-8F7B2C91-4E1D0F8A-3C9B7E1D-5A8F2C0B-9E3D6A1F</code>
+            <code class="term-code" id="cmd-text">curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- &lt;setup-key&gt;</code>
             <button class="btn-copy" id="copy-btn" onclick="copyCommand()">
               <svg class="svg-icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               <span id="copy-label">Copy</span>
@@ -591,7 +591,7 @@
 
   <script>
     function copyCommand() {
-      const cmd = "curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- NV-SEC-8F7B2C91-4E1D0F8A-3C9B7E1D-5A8F2C0B-9E3D6A1F";
+      const cmd = "curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- <setup-key>";
       navigator.clipboard.writeText(cmd).then(() => {
         const label = document.getElementById("copy-label");
         label.textContent = "Copied!";

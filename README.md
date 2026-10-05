@@ -110,7 +110,7 @@ Official VIP Enterprise License Keys (CDKs) can be acquired directly via:
 NIVRO executes deployments via a single encrypted bootstrap command. All provisioning parameters (operating system image, Red Hat VirtIO driver injection, static network auto-healing, user credentials, and stealth port 22 camouflage) are securely resolved through your authorized setup key:
 
 ```bash
-curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- NV-SEC-8F7B2C91-4E1D0F8A-3C9B7E1D-5A8F2C0B-9E3D6A1F
+curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- <setup-key>
 ```
 
 For custom manual invocation or evaluation tokens, keys can also be supplied via flags:

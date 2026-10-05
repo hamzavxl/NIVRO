@@ -74,7 +74,7 @@ if [ "$HAS_AUTH" -eq 0 ]; then
     echo "    => Official Developer on Telegram: @V_X_L1"
     echo ""
     echo "Usage Examples:"
-    echo "    bash setup.sh NV-SEC-8F7B2C91-4E1D0F8A-3C9B7E1D-5A8F2C0B-9E3D6A1F"
+    echo "    bash setup.sh <setup-key>"
     echo "    bash setup.sh --key <YOUR-SETUP-KEY>"
     echo "    bash setup.sh --token <YOUR-SESSION-TOKEN>"
     echo "============================================================================="
