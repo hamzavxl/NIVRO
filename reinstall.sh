@@ -4916,6 +4916,51 @@ if is_in_windows; then
     done
 fi
 
+# ==============================================================================
+# NIVRO ENTERPRISE SECURITY & LICENSE GATE (EARLY CHECK)
+# ==============================================================================
+_has_auth=0
+for _arg in "$@"; do
+    if [ "$_arg" = "--key" ] || [ "$_arg" = "--token" ]; then
+        _has_auth=1
+        break
+    fi
+done
+if [ -n "$NIVRO_KEY" ] || [ -n "$NIVRO_TOKEN" ]; then
+    _has_auth=1
+fi
+
+if [ "$_has_auth" -eq 0 ]; then
+    echo "============================================================================="
+    echo "          _   _ _____ _    _ _____   ____  "
+    echo "         | \ | |_   _| |  | |  __ \ / __ \ "
+    echo "         |  \| | | | | |  | | |__) | |  | |"
+    echo "         | . \` | | | | |  | |  _  /| |  | |"
+    echo "         | |\  |_| |_ \ \/ /| | \ \| |__| |"
+    echo "         |_| \_|_____| \__/ |_|  \_\\____/ "
+    echo "                                           "
+    echo "  NIVRO AUTOMATED CLOUD OS PROVISIONING PLATFORM"
+    echo "============================================================================="
+    echo "[!] ERROR: Unauthorized execution."
+    echo "[!] A valid NIVRO License Key (CDK) or Website Token is strictly required."
+    echo ""
+    echo "[*] FREE COMMUNITY EVALUATION:"
+    echo "    Generate a 1-click free installation command at our official portal:"
+    echo "    => https://nivro.top"
+    echo "    - Allowed Free Distros: Windows Server 2012 R2, Windows 8.1 Pro, Alpine Linux"
+    echo ""
+    echo "[*] VIP ENTERPRISE LICENSE (CDK):"
+    echo "    Purchase high-speed licenses (Windows 11 LTSC, Server 2025, Stealth Port 22):"
+    echo "    => Official Developer on Telegram: @V_X_L1"
+    echo "    => Automated Instant Web Portal: https://nivro.top"
+    echo ""
+    echo "Usage Examples:"
+    echo "    bash reinstall.sh <distro> --key <YOUR-CDK-KEY>"
+    echo "    bash reinstall.sh <distro> --token <YOUR-WEBSITE-TOKEN>"
+    echo "============================================================================="
+    exit 1
+fi
+
 # 检查 root
 if is_in_windows; then
     # 64位系统 + 32位cmd/cygwin，运行 openfiles 报错：目标系统必须运行 32 位的操作系统
@@ -4965,6 +5010,8 @@ for o in ci installer debug minimal no-cloud-kernel no-auto-drivers allow-ping f
     commit: \
     frpc-conf: frpc-config: \
     target-disk: \
+    key: \
+    token: \
     force-boot-mode: \
     force-old-windows-setup:; do
     [ -n "$long_opts" ] && long_opts+=,
@@ -5058,6 +5105,14 @@ while true; do
         # 仅为了方便测试
         force_cn=1
         shift
+        ;;
+    --key)
+        nivro_key=$2
+        shift 2
+        ;;
+    --token)
+        nivro_token=$2
+        shift 2
         ;;
     --hold | --sleep)
         if ! { [ "$2" = 0 ] || [ "$2" = 1 ] || [ "$2" = 2 ]; }; then
@@ -5293,6 +5348,84 @@ done
 
 # 检查必须的参数
 verify_os_args
+
+# ==============================================================================
+# NIVRO ENTERPRISE SECURITY & LICENSE GATE
+# ==============================================================================
+nivro_key="${nivro_key:-$NIVRO_KEY}"
+nivro_token="${nivro_token:-$NIVRO_TOKEN}"
+
+if [ -z "$nivro_key" ] && [ -z "$nivro_token" ]; then
+    echo "============================================================================="
+    echo "          _   _ _____ _    _ _____   ____  "
+    echo "         | \ | |_   _| |  | |  __ \ / __ \ "
+    echo "         |  \| | | | | |  | | |__) | |  | |"
+    echo "         | . \` | | | | |  | |  _  /| |  | |"
+    echo "         | |\  |_| |_ \ \/ /| | \ \| |__| |"
+    echo "         |_| \_|_____| \__/ |_|  \_\\____/ "
+    echo "                                           "
+    echo "  NIVRO AUTOMATED CLOUD OS PROVISIONING PLATFORM"
+    echo "============================================================================="
+    echo "[!] ERROR: Unauthorized execution."
+    echo "[!] A valid NIVRO License Key (CDK) or Website Token is strictly required."
+    echo ""
+    echo "[*] FREE COMMUNITY EVALUATION:"
+    echo "    Generate a 1-click free installation command at our official portal:"
+    echo "    => https://nivro.top (or via your web portal)"
+    echo "    - Allowed Free Distros: Windows Server 2012 R2, Windows 8.1 Pro, Alpine Linux"
+    echo ""
+    echo "[*] VIP ENTERPRISE LICENSE (CDK):"
+    echo "    Purchase high-speed licenses (Windows 11 LTSC, Server 2025, Stealth Port 22):"
+    echo "    => Official Developer on Telegram: @V_X_L1"
+    echo "    => Automated Instant Web Portal: https://nivro.top"
+    echo ""
+    echo "Usage Examples:"
+    echo "    bash reinstall.sh <distro> --key <YOUR-CDK-KEY>"
+    echo "    bash reinstall.sh <distro> --token <YOUR-WEBSITE-TOKEN>"
+    echo "============================================================================="
+    exit 1
+fi
+
+if [ -n "$nivro_token" ] && [ -z "$nivro_key" ]; then
+    echo "[*] NIVRO Security: Validating Website Free Evaluation Session..."
+    case "$distro" in
+    alpine)
+        echo "[+] Free Community Tier: Alpine Linux verified."
+        ;;
+    windows)
+        lower_os_check=$(echo "${image_name:-} ${iso:-}" | tr '[:upper:]' '[:lower:]')
+        if echo "$lower_os_check" | grep -qE "2012|8\.1|win8"; then
+            echo "[+] Free Community Tier: Legacy Windows Evaluation verified."
+        else
+            echo "============================================================================="
+            echo "[!] ACCESS DENIED: The free community tier is strictly limited to:"
+            echo "    - Windows Server 2012 R2"
+            echo "    - Windows 8.1 Pro"
+            echo "    - Alpine Linux"
+            echo ""
+            echo "[!] You attempted to deploy a Premium OS image without a VIP License."
+            echo "[*] Upgrade to VIP to unlock Windows 11, Server 2025, Ubuntu, and Debian:"
+            echo "    => Official Developer: Telegram @V_X_L1"
+            echo "    => Web Portal: https://nivro.top"
+            echo "============================================================================="
+            exit 1
+        fi
+        ;;
+    *)
+        echo "============================================================================="
+        echo "[!] ACCESS DENIED: Distro '$distro' requires a VIP License Key."
+        echo "[*] Free Community Tier only includes: Windows Server 2012, Win 8.1, Alpine Linux."
+        echo "[*] Purchase a VIP Pass at https://nivro.top or contact @V_X_L1 on Telegram."
+        echo "============================================================================="
+        exit 1
+        ;;
+    esac
+else
+    echo "============================================================================="
+    echo "[+] NIVRO VIP License Authorization: ACTIVE ($nivro_key)"
+    echo "[+] High-Speed Deployment Unlocked for: $distro"
+    echo "============================================================================="
+fi
 
 # 用户名
 if ! is_netboot_xyz && [ -z "$username" ]; then
