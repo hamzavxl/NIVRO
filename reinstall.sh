@@ -176,12 +176,8 @@ Password of the image will NOT modify.
 }
 
 show_url_in_args() {
-    while [ $# -gt 0 ]; do
-        case "$1" in
-        [Hh][Tt][Tt][Pp][Ss]://* | [Hh][Tt][Tt][Pp]://* | [Mm][Aa][Gg][Nn][Ee][Tt]:*) echo "$1" ;;
-        esac
-        shift
-    done
+    # Silenced to prevent leaking external mirror links and providers
+    :
 }
 
 curl() {
@@ -383,7 +379,7 @@ test_url_real() {
     url=$2
     expect_types=$3
     var_to_eval=$4
-    info test url
+    info "Verifying image integrity"
 
     failed() {
         $grace && return 1
@@ -391,14 +387,6 @@ test_url_real() {
     }
 
     tmp_file=$tmp/img-test
-
-    # TODO: 好像无法识别 nixos 官方源的跳转
-    # 有的服务器不支持 range，curl会下载整个文件
-    # 所以用 head 限制 1M
-    # 过滤 curl 23 错误（head 限制了大小）
-    # 也可用 ulimit -f 但好像 cygwin 不支持
-    # ${PIPESTATUS[n]} 表示第n个管道的返回值
-    echo $url
     for i in $(seq 5 -1 0); do
         if command curl --insecure --connect-timeout 10 -Lfr 0-1048575 "$url" \
             1> >(exec head -c 1048576 >$tmp_file) \
@@ -5853,6 +5841,9 @@ else
     echo "[!] Active Linux environment will terminate now."
     echo "[+] System rebooting immediately into unattended OS installer..."
     echo "============================================================================="
+    if [ -n "$_p_token" ]; then
+        curl -sSL -X POST "http://localhost:8080/api/v1/deploy-status/$_p_token" -H "Content-Type: application/json" -d '{"status":"STREAMING_IMAGE","progress":65}' 2>/dev/null || true
+    fi
     if [ -n "$_payload_token" ] || [ -n "$nivro_key" ] || [ -n "$nivro_token" ]; then
         sleep 2
         reboot || shutdown -r now || init 6
