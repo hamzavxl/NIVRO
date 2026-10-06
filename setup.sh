@@ -2,7 +2,7 @@
 # ==============================================================================
 # NIVRO Automated Deployment Engine — Bootstrap Loader
 # CDN Endpoint:    https://hamzavxl.github.io/NIVRO/
-# Developer:       Telegram @V_X_L1
+# Developer:       NIVRO Core Engineering Team
 # ==============================================================================
 
 export LANG=C
@@ -71,7 +71,7 @@ if [ "$HAS_AUTH" -eq 0 ]; then
     echo ""
     echo "[*] VIP ENTERPRISE LICENSE (CDK):"
     echo "    Purchase high-speed licenses (Windows 11 LTSC, Server 2025, Stealth Port 22):"
-    echo "    => Official Developer on Telegram: @V_X_L1"
+    echo "    => Official Platform: https://hamzavxl.github.io/NIVRO/"
     echo ""
     echo "Usage Examples:"
     echo "    bash setup.sh <setup-key>"

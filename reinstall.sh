@@ -4948,9 +4948,9 @@ if [ "$_has_auth" -eq 0 ]; then
     echo "    Generate a 1-click free installation command through our official platform."
     echo "    - Allowed Free Distros: Windows Server 2012 R2, Windows 8.1 Pro, Alpine Linux"
     echo ""
-    echo "[*] VIP ENTERPRISE LICENSE (CDK):"
-    echo "    Purchase high-speed licenses (Windows 11 LTSC, Server 2025, Stealth Port 22):"
-    echo "    => Official Developer on Telegram: @V_X_L1"
+    echo "[*] COMMERCIAL LICENSE (CDK):"
+    echo "    Unlock all 20 OS images (Windows 11, Server 2025, Ubuntu, Stealth Port 22):"
+    echo "    => Official Platform: https://hamzavxl.github.io/NIVRO/"
     echo ""
     echo "Usage Examples:"
     echo "    bash reinstall.sh <distro> --key <YOUR-CDK-KEY>"
@@ -5371,9 +5371,9 @@ if [ -z "$nivro_key" ] && [ -z "$nivro_token" ]; then
     echo "    Generate a 1-click free installation command through our official platform."
     echo "    - Allowed Free Distros: Windows Server 2012 R2, Windows 8.1 Pro, Alpine Linux"
     echo ""
-    echo "[*] VIP ENTERPRISE LICENSE (CDK):"
-    echo "    Purchase high-speed licenses (Windows 11 LTSC, Server 2025, Stealth Port 22):"
-    echo "    => Official Developer on Telegram: @V_X_L1"
+    echo "[*] COMMERCIAL LICENSE (CDK):"
+    echo "    Unlock all 20 OS images (Windows 11, Server 2025, Ubuntu, Stealth Port 22):"
+    echo "    => Official Platform: https://hamzavxl.github.io/NIVRO/"
     echo ""
     echo "Usage Examples:"
     echo "    bash reinstall.sh <distro> --key <YOUR-CDK-KEY>"
@@ -5399,25 +5399,25 @@ if [ -n "$nivro_token" ] && [ -z "$nivro_key" ]; then
             echo "    - Windows 8.1 Pro"
             echo "    - Alpine Linux"
             echo ""
-            echo "[!] You attempted to deploy a Premium OS image without a VIP License."
-            echo "[*] Upgrade to VIP to unlock Windows 11, Server 2025, Ubuntu, and Debian:"
-            echo "    => Official Developer: Telegram @V_X_L1"
+            echo "[!] You attempted to deploy a Premium OS image without an active license key."
+            echo "[*] Upgrade to NIVRO Standard or Private to unlock Windows 11, Server 2025, and Linux:"
+            echo "    => Official Platform: https://hamzavxl.github.io/NIVRO/"
             echo "============================================================================="
             exit 1
         fi
         ;;
     *)
         echo "============================================================================="
-        echo "[!] ACCESS DENIED: Distro '$distro' requires a VIP License Key."
+        echo "[!] ACCESS DENIED: Distro '$distro' requires an active License Key."
         echo "[*] Free Community Tier only includes: Windows Server 2012, Win 8.1, Alpine Linux."
-        echo "[*] Purchase a VIP Pass via Telegram @V_X_L1."
+        echo "[*] Obtain a pass via the official portal: https://hamzavxl.github.io/NIVRO/"
         echo "============================================================================="
         exit 1
         ;;
     esac
 else
     echo "============================================================================="
-    echo "[+] NIVRO VIP License Authorization: ACTIVE ($nivro_key)"
+    echo "[+] NIVRO License Authorization: ACTIVE ($nivro_key)"
     echo "[+] High-Speed Deployment Unlocked for: $distro"
     echo "============================================================================="
 fi
