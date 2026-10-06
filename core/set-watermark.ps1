@@ -32,10 +32,10 @@ $font1 = New-Object System.Drawing.Font("Segoe UI", 24, [System.Drawing.FontStyl
 $font2 = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
 $brushShadow = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(230, 0, 0, 0))
 $brushWhite = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 255, 255, 255))
-$brushAccent = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 96, 165, 250))
+$brushAccent = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 147, 197, 253))
 
 $textLine1 = "NIVRO Cloud Platform"
-$textLine2 = "Windows Server 2025 · Private Plan Authorized"
+$textLine2 = "Windows Server 2025 - Private Plan Authorized"
 
 $marginRight = 36
 $marginBottom = 95  # Comfortably above taskbar and tray
