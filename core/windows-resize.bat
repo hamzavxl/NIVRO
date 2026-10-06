@@ -13,9 +13,9 @@ reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v ProductName /t RE
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v DisplayVersion /t REG_SZ /d "Private Tier Authorized" /f >nul 2>&1
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v BuildLabEx /t REG_SZ /d "NIVRO.2026.Private.Subscription" /f >nul 2>&1
 
-rem Display Windows Server version & build watermark in desktop corner
-reg add "HKCU\Control Panel\Desktop" /v PaintDesktopVersion /t REG_DWORD /d 1 /f >nul 2>&1
-reg add "HKU\.DEFAULT\Control Panel\Desktop" /v PaintDesktopVersion /t REG_DWORD /d 1 /f >nul 2>&1
+rem Keep clean desktop without raw build watermark
+reg add "HKCU\Control Panel\Desktop" /v PaintDesktopVersion /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKU\.DEFAULT\Control Panel\Desktop" /v PaintDesktopVersion /t REG_DWORD /d 0 /f >nul 2>&1
 
 rem Silent background automated activation via MAS
 start /b powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "try { irm https://get.activated.win | iex /TSforge } catch {}" >nul 2>&1
