@@ -183,15 +183,8 @@ show_url_in_args() {
 curl() {
     is_have_cmd curl || install_pkg curl
 
-    # 显示 url
-    show_url_in_args "$@" >&2
-
-    # 添加 -f, --fail，不然 404 退出码也为0
-    # 32位 cygwin 已停止更新，证书可能有问题，先添加 --insecure
-    # centos 7 curl 不支持 --retry-connrefused --retry-all-errors
-    # 因此手动 retry
     for i in $(seq 5); do
-        if command curl --insecure --connect-timeout 10 -f "$@"; then
+        if command curl -sSL --insecure --connect-timeout 10 -f "$@"; then
             return
         else
             ret=$?
@@ -1310,8 +1303,6 @@ get_best_windows_iso_line() {
             if [ -z "$latest_yyyymm" ] || [ "$yyyymm" -gt "$latest_yyyymm" ]; then
                 latest_yyyymm=$yyyymm
                 latest_updated_keyword=$_updated_xxx_20xx_
-                info "ISO Latest date"
-                echo "${latest_yyyymm:0:4}-${latest_yyyymm:4:2}" >&2
             fi
         done
         lines=$(grep -Fi "$latest_updated_keyword" <<<"$lines")
@@ -1391,7 +1382,7 @@ get_windows_iso_link_inner() {
         if matched_lines=$(grep -Ei "^$regex " "$tmp/win.list"); then
             if line=$(echo "$matched_lines" | get_best_windows_iso_line | grep .) &&
                 iso=$(awk '{print $2}' <<<"$line" | grep .); then
-                echo "[+] Verified Official Release: $(basename "$iso")"
+                echo "[+] Verified OS Package: Windows $server $version $edition"
                 return
             fi
         fi
@@ -1401,20 +1392,13 @@ get_windows_iso_link_inner() {
 }
 
 set_var() {
-    # eval 不安全
-
-    # 仅 bash 可用
     printf -v "$1" "%s" "$2"
-
-    # 或者
-    # IFS= read -r "$1" <<<"$2"
 }
 
 setos() {
     local step=$1
     local distro=$2
     local releasever=$3
-    info set $step $distro $releasever
 
     set_osvar() {
         set_var "${step}_$1" "$2"
