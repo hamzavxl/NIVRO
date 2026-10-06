@@ -24,16 +24,24 @@ $brushAccent = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::From
 $textLine1 = "NIVRO Cloud Platform"
 $textLine2 = "Windows Server 2025 · Private Plan Authorized"
 
-# Calculate positions (Bottom Right corner clearly above taskbar)
-$marginRight = 36
-$marginBottom = 110
+# Calculate positions based on primary screen resolution
+$screen = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+$screenWidth = $screen.Width
+$screenHeight = $screen.Height
+
+# If wallpaper resolution differs from screen, scale coordinates
+$scaleX = $bmp.Width / [Math]::Max(1, $screenWidth)
+$scaleY = $bmp.Height / [Math]::Max(1, $screenHeight)
+
+$marginRightScreen = 30
+$marginBottomScreen = 90  # Well above the 48px taskbar
 
 $size1 = $g.MeasureString($textLine1, $font1)
 $size2 = $g.MeasureString($textLine2, $font2)
 $maxWidth = [Math]::Max($size1.Width, $size2.Width)
 
-$x = $bmp.Width - $maxWidth - $marginRight
-$y = $bmp.Height - $size1.Height - $size2.Height - $marginBottom
+$x = $bmp.Width - ($maxWidth + ($marginRightScreen * $scaleX))
+$y = $bmp.Height - (($size1.Height + $size2.Height) + ($marginBottomScreen * $scaleY))
 
 # Draw Text with Subtle Shadow
 $g.DrawString($textLine1, $font1, $brushShadow, ($x + 1), ($y + 1))
