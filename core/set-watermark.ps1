@@ -1,13 +1,13 @@
 Add-Type -AssemblyName System.Drawing, System.Windows.Forms
 
-# 1. Get current wallpaper path
-$wpPath = (Get-ItemProperty 'HKCU:\Control Panel\Desktop').Wallpaper
-if (-not (Test-Path $wpPath) -or -not $wpPath) {
-    $wpPath = "$env:windir\Web\Wallpaper\Windows\img0.jpg"
+# 1. Always start from original untouched clean Windows Wallpaper
+$cleanWp = "$env:windir\Web\Wallpaper\Windows\img0.jpg"
+if (-not (Test-Path $cleanWp)) {
+    $cleanWp = (Get-ItemProperty 'HKCU:\Control Panel\Desktop').Wallpaper
 }
 
 # 2. Load Wallpaper via MemoryStream (Prevents GDI+ lock)
-$bytes = [System.IO.File]::ReadAllBytes($wpPath)
+$bytes = [System.IO.File]::ReadAllBytes($cleanWp)
 $ms = New-Object System.IO.MemoryStream(,$bytes)
 $bmp = [System.Drawing.Bitmap]::FromStream($ms)
 $newBmp = New-Object System.Drawing.Bitmap($bmp.Width, $bmp.Height)
@@ -17,7 +17,7 @@ $g.DrawImage($bmp, 0, 0, $bmp.Width, $bmp.Height)
 # 3. Setup Brand Watermark Text
 $font1 = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
 $font2 = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Regular)
-$brushShadow = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(180, 0, 0, 0))
+$brushShadow = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(200, 0, 0, 0))
 $brushWhite = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 255, 255, 255))
 $brushAccent = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 96, 165, 250))
 
@@ -33,8 +33,8 @@ $screenHeight = $screen.Height
 $scaleX = $bmp.Width / [Math]::Max(1, $screenWidth)
 $scaleY = $bmp.Height / [Math]::Max(1, $screenHeight)
 
-$marginRightScreen = 30
-$marginBottomScreen = 90  # Well above the 48px taskbar
+$marginRightScreen = 32
+$marginBottomScreen = 140  # Safely above taskbar and system tray popups
 
 $size1 = $g.MeasureString($textLine1, $font1)
 $size2 = $g.MeasureString($textLine2, $font2)
