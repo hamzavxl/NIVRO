@@ -1125,16 +1125,16 @@ get_windows_iso_link() {
             ;;
         2008 | '2008 r2')
             case "$edition" in
-            serverweb | serverwebcore) echo _ ;;
-            serverstandard | serverstandardcore) echo _ ;;
-            serverenterprise | serverenterprisecore) echo _ ;;
-            serverdatacenter | serverdatacentercore) echo _ ;;
+            web | webcore | serverweb | serverwebcore) echo _ ;;
+            standard | standardcore | serverstandard | serverstandardcore) echo _ ;;
+            enterprise | enterprisecore | serverenterprise | serverenterprisecore) echo _ ;;
+            datacenter | datacentercore | serverdatacenter | serverdatacentercore) echo _ ;;
             esac
             ;;
         2012 | '2012 r2' | 2016 | 2019 | 2022 | 2025)
             case "$edition" in
-            serverstandard | serverstandardcore) echo _ ;;
-            serverdatacenter | serverdatacentercore) echo _ ;;
+            standard | standardcore | serverstandard | serverstandardcore) echo _ ;;
+            datacenter | datacentercore | serverdatacenter | serverdatacentercore) echo _ ;;
             esac
             ;;
         esac
