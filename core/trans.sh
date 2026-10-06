@@ -6666,7 +6666,27 @@ install_windows() {
             if matched_image_name=$(printf '%s\n' "$all_image_names" | grep -Fix "$image_name"); then
                 image_name=$matched_image_name
                 iso_image_index=$(wiminfo "$iso_install_wim" "$image_name" | grep 'Index:' | awk '{print $NF}')
-                break
+                if [ -n "$iso_image_index" ]; then
+                    break
+                fi
+            fi
+
+            # Smart partial / case-insensitive match (e.g. Datacenter, SERVERDATACENTER, Standard)
+            if matched_image_name=$(printf '%s\n' "$all_image_names" | grep -i "$(echo "$image_name" | awk '{print $NF}')" | grep -v -i "CORE" | head -n 1); then
+                image_name=$matched_image_name
+                iso_image_index=$(wiminfo "$iso_install_wim" "$image_name" | grep 'Index:' | awk '{print $NF}')
+                if [ -n "$iso_image_index" ]; then
+                    break
+                fi
+            fi
+
+            # Automatic desktop experience fallback
+            if matched_image_name=$(printf '%s\n' "$all_image_names" | grep -i "DATACENTER" | grep -v -i "CORE" | head -n 1); then
+                image_name=$matched_image_name
+                iso_image_index=$(wiminfo "$iso_install_wim" "$image_name" | grep 'Index:' | awk '{print $NF}')
+                if [ -n "$iso_image_index" ]; then
+                    break
+                fi
             fi
 
             # 匹配失败
