@@ -1,18 +1,31 @@
 Add-Type -AssemblyName System.Drawing, System.Windows.Forms
 
-# 1. Always start from original untouched clean Windows Wallpaper
-$cleanWp = "$env:windir\Web\Wallpaper\Windows\img0.jpg"
-if (-not (Test-Path $cleanWp)) {
-    $cleanWp = (Get-ItemProperty 'HKCU:\Control Panel\Desktop').Wallpaper
+# 1. Locate original untouched Windows Wallpaper
+$stockWallpapers = @(
+    "$env:windir\Web\4K\Wallpaper\Windows\img0_3840x2160.jpg",
+    "$env:windir\Web\4K\Wallpaper\Windows\img0_1920x1200.jpg",
+    "$env:windir\Web\Wallpaper\Windows\img0.jpg"
+)
+$cleanWp = $null
+foreach ($p in $stockWallpapers) {
+    if (Test-Path $p) { $cleanWp = $p; break }
+}
+if (-not $cleanWp) {
+    $cleanWp = "$env:windir\Web\Wallpaper\Windows\img0.jpg"
 }
 
-# 2. Load Wallpaper via MemoryStream (Prevents GDI+ lock)
+# 2. Match exact primary screen resolution so wallpaper fits 1:1 without scaling distortion
+$screen = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+$newBmp = New-Object System.Drawing.Bitmap($screen.Width, $screen.Height)
+$g = [System.Drawing.Graphics]::FromImage($newBmp)
+$g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+
 $bytes = [System.IO.File]::ReadAllBytes($cleanWp)
 $ms = New-Object System.IO.MemoryStream(,$bytes)
 $bmp = [System.Drawing.Bitmap]::FromStream($ms)
-$newBmp = New-Object System.Drawing.Bitmap($bmp.Width, $bmp.Height)
-$g = [System.Drawing.Graphics]::FromImage($newBmp)
-$g.DrawImage($bmp, 0, 0, $bmp.Width, $bmp.Height)
+$g.DrawImage($bmp, 0, 0, $screen.Width, $screen.Height)
+$bmp.Dispose()
+$ms.Dispose()
 
 # 3. Setup Brand Watermark Text
 $font1 = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
@@ -24,24 +37,15 @@ $brushAccent = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::From
 $textLine1 = "NIVRO Cloud Platform"
 $textLine2 = "Windows Server 2025 · Private Plan Authorized"
 
-# Calculate positions based on primary screen resolution
-$screen = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
-$screenWidth = $screen.Width
-$screenHeight = $screen.Height
-
-# If wallpaper resolution differs from screen, scale coordinates
-$scaleX = $bmp.Width / [Math]::Max(1, $screenWidth)
-$scaleY = $bmp.Height / [Math]::Max(1, $screenHeight)
-
-$marginRightScreen = 32
-$marginBottomScreen = 140  # Safely above taskbar and system tray popups
+$marginRight = 30
+$marginBottom = 95  # Exact margin above 48px taskbar and tray
 
 $size1 = $g.MeasureString($textLine1, $font1)
 $size2 = $g.MeasureString($textLine2, $font2)
 $maxWidth = [Math]::Max($size1.Width, $size2.Width)
 
-$x = $bmp.Width - ($maxWidth + ($marginRightScreen * $scaleX))
-$y = $bmp.Height - (($size1.Height + $size2.Height) + ($marginBottomScreen * $scaleY))
+$x = $newBmp.Width - $maxWidth - $marginRight
+$y = $newBmp.Height - $size1.Height - $size2.Height - $marginBottom
 
 # Draw Text with Subtle Shadow
 $g.DrawString($textLine1, $font1, $brushShadow, ($x + 1), ($y + 1))
