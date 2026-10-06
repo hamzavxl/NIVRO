@@ -27,18 +27,18 @@ $g.DrawImage($bmp, 0, 0, $screen.Width, $screen.Height)
 $bmp.Dispose()
 $ms.Dispose()
 
-# 3. Setup Brand Watermark Text
-$font1 = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
-$font2 = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Regular)
-$brushShadow = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(200, 0, 0, 0))
+# 3. Setup Brand Watermark Text (Large & Prominent)
+$font1 = New-Object System.Drawing.Font("Segoe UI", 24, [System.Drawing.FontStyle]::Bold)
+$font2 = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
+$brushShadow = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(230, 0, 0, 0))
 $brushWhite = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 255, 255, 255))
 $brushAccent = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 96, 165, 250))
 
 $textLine1 = "NIVRO Cloud Platform"
 $textLine2 = "Windows Server 2025 · Private Plan Authorized"
 
-$marginRight = 30
-$marginBottom = 95  # Exact margin above 48px taskbar and tray
+$marginRight = 36
+$marginBottom = 95  # Comfortably above taskbar and tray
 
 $size1 = $g.MeasureString($textLine1, $font1)
 $size2 = $g.MeasureString($textLine2, $font2)
