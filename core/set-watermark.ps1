@@ -51,12 +51,21 @@ $g.Dispose()
 $newBmp.Dispose()
 $bmp.Dispose()
 
-# 5. Apply as wallpaper
+# 5. Apply as wallpaper in Registry & Desktop
+Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name Wallpaper -Value $destPath
+Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name WallpaperStyle -Value "2"
+Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name TileWallpaper -Value "0"
+
 Add-Type @"
+using System;
 using System.Runtime.InteropServices;
 public class Wallpaper {
-    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
 }
 "@
-[Wallpaper]::SystemParametersInfo(0x0014, 0, $destPath, 0x01 -bor 0x02)
+[Wallpaper]::SystemParametersInfo(20, 0, $destPath, 3)
+
+# Force immediate desktop redraw
+(New-Object -ComObject WScript.Shell).SendKeys('{F5}')
+Stop-Process -Name explorer -Force
