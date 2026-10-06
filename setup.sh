@@ -34,20 +34,25 @@ fi
 HAS_AUTH=0
 PASS_ARGS=("$@")
 
-# If single argument passed without leading hyphen, treat directly as setup key
-if [ $# -eq 1 ] && [[ "$1" != -* ]]; then
-    HAS_AUTH=1
-    PASS_ARGS=(--key "$1")
+# If single argument passed without leading hyphen or starts with NVRO_
+if [ $# -eq 1 ]; then
+    if [[ "$1" == NVRO_* ]]; then
+        HAS_AUTH=1
+        PASS_ARGS=(--payload "$1")
+    elif [[ "$1" != -* ]]; then
+        HAS_AUTH=1
+        PASS_ARGS=(--key "$1")
+    fi
 fi
 
 for ARG in "$@"; do
-    if [ "$ARG" = "--key" ] || [ "$ARG" = "--token" ]; then
+    if [ "$ARG" = "--key" ] || [ "$ARG" = "--token" ] || [ "$ARG" = "--payload" ] || [ "$ARG" = "--hash" ] || [[ "$ARG" == NVRO_* ]]; then
         HAS_AUTH=1
         break
     fi
 done
 
-if [ -n "$NIVRO_KEY" ] || [ -n "$NIVRO_TOKEN" ]; then
+if [ -n "$NIVRO_KEY" ] || [ -n "$NIVRO_TOKEN" ] || [ -n "$NIVRO_PAYLOAD" ]; then
     HAS_AUTH=1
 fi
 

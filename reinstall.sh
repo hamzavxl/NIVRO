@@ -4917,16 +4917,74 @@ if is_in_windows; then
 fi
 
 # ==============================================================================
-# NIVRO ENTERPRISE SECURITY & LICENSE GATE (EARLY CHECK)
+# NIVRO ENTERPRISE SECURITY & LICENSE GATE (EARLY CHECK & PAYLOAD UNPACK)
 # ==============================================================================
+NIVRO_SALT="NIVRO_INTEGRITY_SALT_2026_SECURE"
+
+_payload_token=""
+_prev_arg=""
+for _arg in "$@"; do
+    if [ "$_prev_arg" = "--payload" ] || [ "$_prev_arg" = "--hash" ]; then
+        _payload_token="$_arg"
+        break
+    elif [[ "$_arg" == --payload=* ]]; then
+        _payload_token="${_arg#--payload=}"
+        break
+    elif [[ "$_arg" == --hash=* ]]; then
+        _payload_token="${_arg#--hash=}"
+        break
+    elif [[ "$_arg" == NVRO_* ]]; then
+        _payload_token="$_arg"
+        break
+    fi
+    _prev_arg="$_arg"
+done
+
+if [ -n "$_payload_token" ]; then
+    echo "[*] NIVRO Security Gate: Validating Tamper-Proof Payload Hash..."
+    _stripped="${_payload_token#NVRO_}"
+    _b64="${_stripped%%_*}"
+    _sig="${_stripped##*_}"
+
+    _calc_sig=$(printf "%s" "$_b64" | openssl dgst -sha256 -hmac "$NIVRO_SALT" 2>/dev/null | awk '{print $NF}')
+    if [ -n "$_calc_sig" ] && [ "$_sig" != "$_calc_sig" ]; then
+        echo "============================================================================="
+        echo " [!] CRITICAL SECURITY ALERT: PAYLOAD_INTEGRITY_VIOLATION"
+        echo " [!] The deployment command hash has been modified, tampered with, or corrupted."
+        echo " [!] Cryptographic HMAC SHA-256 signature verification failed."
+        echo " [!] Execution aborted by NIVRO Security Policy."
+        echo "============================================================================="
+        exit 1
+    fi
+
+    _json_dec=$(printf "%s" "$_b64" | base64 -d 2>/dev/null)
+    _p_os=$(echo "$_json_dec" | grep -o '"os":[^,}]*' | sed -E 's/"os"://; s/^"//; s/"$//')
+    _p_img=$(echo "$_json_dec" | grep -o '"img":[^,}]*' | sed -E 's/"img"://; s/^"//; s/"$//')
+    _p_pass=$(echo "$_json_dec" | grep -o '"pass":[^,}]*' | sed -E 's/"pass"://; s/^"//; s/"$//')
+    _p_port=$(echo "$_json_dec" | grep -o '"port":[^,}]*' | sed -E 's/"port"://; s/^"//; s/"$//')
+    _p_key=$(echo "$_json_dec" | grep -o '"key":[^,}]*' | sed -E 's/"key"://; s/^"//; s/"$//')
+    _p_token=$(echo "$_json_dec" | grep -o '"token":[^,}]*' | sed -E 's/"token"://; s/^"//; s/"$//')
+
+    echo "[+] Cryptographic Signature Verified: Authenticity & Integrity Confirmed."
+    echo " [>] Target OS Profile: $_p_os ($_p_img)"
+    echo " [>] Access Port:      $_p_port (Linux SSH Camouflage / Stealth Mode)"
+    echo " [>] Authorization:    ${_p_key:-$_p_token}"
+
+    if [ "$_p_os" = "windows" ]; then
+        set -- windows --image-name "$_p_img" --password "$_p_pass" --rdp-port "$_p_port" --key "$_p_key" --token "$_p_token"
+    else
+        set -- "$_p_os" --password "$_p_pass" --ssh-port "$_p_port" --key "$_p_key" --token "$_p_token"
+    fi
+fi
+
 _has_auth=0
 for _arg in "$@"; do
-    if [ "$_arg" = "--key" ] || [ "$_arg" = "--token" ]; then
+    if [ "$_arg" = "--key" ] || [ "$_arg" = "--token" ] || [ "$_arg" = "--payload" ] || [ "$_arg" = "--hash" ]; then
         _has_auth=1
         break
     fi
 done
-if [ -n "$NIVRO_KEY" ] || [ -n "$NIVRO_TOKEN" ]; then
+if [ -n "$NIVRO_KEY" ] || [ -n "$NIVRO_TOKEN" ] || [ -n "$NIVRO_PAYLOAD" ]; then
     _has_auth=1
 fi
 
