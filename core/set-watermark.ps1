@@ -24,9 +24,9 @@ $brushAccent = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::From
 $textLine1 = "NIVRO Cloud Platform"
 $textLine2 = "Windows Server 2025 · Private Plan Authorized"
 
-# Calculate positions (Bottom Right corner)
+# Calculate positions (Bottom Right corner clearly above taskbar)
 $marginRight = 36
-$marginBottom = 72
+$marginBottom = 110
 
 $size1 = $g.MeasureString($textLine1, $font1)
 $size2 = $g.MeasureString($textLine2, $font2)
