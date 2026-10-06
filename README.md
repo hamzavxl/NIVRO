@@ -20,14 +20,14 @@ Documentation & Releases: https://hamzavxl.github.io/NIVRO/
 
 ## About This Repository
 
-This repository contains public release artifacts used by the NIVRO deployment platform, including:
+This repository provides the core unattended operating system provisioning engine for NIVRO:
 
-- Bootstrap loaders (setup.sh)
-- Core unattended provisioning engines (reinstall.sh)
-- VirtIO storage and network virtualization routines (core/)
-- Static IP and gateway auto-healing components (core/)
+- Core unattended provisioning engine (`reinstall.sh`)
+- Automated VirtIO storage and network driver integration
+- Dynamic network topology preserving (static IPv4 & gateway)
+- Automated desktop branding and stealth access configuration
 
-These artifacts are executed as part of an operating system deployment workflow initiated by an authorized user using an installation command generated through the NIVRO service.
+Provisioning is executed via cryptographically signed payload hashes issued through the official NIVRO console.
 
 ---
 
@@ -106,18 +106,17 @@ Official VIP Enterprise License Keys (CDKs) can be acquired directly via:
 ---
 
 ## Installation Command
-
-NIVRO executes deployments via a single encrypted bootstrap command. All provisioning parameters (operating system image, Red Hat VirtIO driver injection, static network auto-healing, user credentials, and stealth port 22 camouflage) are securely resolved through your authorized setup key:
-
+ 
+NIVRO executes deployments via a single encrypted execution command. All provisioning parameters (operating system image, VirtIO drivers, static network preservation, credentials, and stealth port configuration) are cryptographically verified:
+ 
 ```bash
-curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- <setup-key>
+curl -sSL https://hamzavxl.github.io/NIVRO/reinstall.sh | bash -s -- --payload <SIGNED-PAYLOAD-HASH>
 ```
-
-For custom manual invocation or evaluation tokens, keys can also be supplied via flags:
-
+ 
+For authorized manual execution:
+ 
 ```bash
-curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- --key <YOUR-SETUP-KEY>
-curl -sSL https://hamzavxl.github.io/NIVRO/setup.sh | bash -s -- --token <YOUR-SESSION-TOKEN>
+curl -sSL https://hamzavxl.github.io/NIVRO/reinstall.sh | bash -s -- <os-profile> --password <password> --key <license-key>
 ```
 
 ---
