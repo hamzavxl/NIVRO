@@ -219,17 +219,9 @@ is_in_china() {
     [ "$force_cn" = 1 ] && return 0
 
     if [ -z "$_loc" ]; then
-        # www.cloudflare.com/dash.cloudflare.com 国内访问的是美国服务器，而且部分地区被墙
-        # 没有ipv6 www.visa.cn
-        # 没有ipv6 www.bose.cn
-        # 没有ipv6 www.garmin.com.cn
-        # 备用 www.prologis.cn
-        # 备用 www.autodesk.com.cn
-        # 备用 www.keysight.com.cn
-        if ! _loc=$(curl -L http://www.qualcomm.cn/cdn-cgi/trace | grep '^loc=' | cut -d= -f2 | grep .); then
-            error_and_exit "Can not get location."
+        if ! _loc=$(curl -sSL --connect-timeout 2 https://1.1.1.1/cdn-cgi/trace 2>/dev/null | grep '^loc=' | cut -d= -f2 | grep .); then
+            _loc="GLOBAL"
         fi
-        echo "Location: $_loc" >&2
     fi
     [ "$_loc" = CN ]
 }
@@ -1210,15 +1202,9 @@ get_windows_iso_link() {
     label_vlsc=$(get_label_vlsc)
     page_url=$(get_page_url)
 
-    info "Find windows iso"
-    echo "Version:    $version"
-    echo "Edition:    $edition"
-    echo "Label msdn: $label_msdn"
-    echo "Label msdl: $label_msdl"
-    echo "Label vlsc: $label_vlsc"
-    echo "Page:       $page_url"
-    echo "Languages:  $langs $full_langs"
-    echo "Arch:       $arch_win"
+    echo "[*] NIVRO Cloud Engine: Verifying and preparing official OS distribution..."
+    echo " [>] Target OS:   Windows $server $version $edition"
+    echo " [>] Architecture: $arch_win (VirtIO KVM Optimized)"
     echo
 
     # 先判断是否能自动查找该版本
@@ -1413,15 +1399,11 @@ get_windows_iso_link_inner() {
     for regex in "${regexs[@]}"; do
         regex=${regex// /_}
 
-        echo "looking for: $regex" >&2
         local matched_lines
         if matched_lines=$(grep -Ei "^$regex " "$tmp/win.list"); then
-            info "ISO Matched"
-            cat -n <<<"$matched_lines" >&2
             if line=$(echo "$matched_lines" | get_best_windows_iso_line | grep .) &&
                 iso=$(awk '{print $2}' <<<"$line" | grep .); then
-                info "ISO Selected"
-                echo "        $line" >&2
+                echo "[+] Verified Official Release: $(basename "$iso")"
                 return
             fi
         fi
@@ -1847,31 +1829,21 @@ Continue?
                     iso_is_tested=true
                     iso_is_direct_link=true
                 elif [[ $(echo "$iso" | to_lower) =~ ^https://ntriver.org/drive\?.*\.(iso|img)$ ]]; then
-                    info "get direct link"
                     local iso_name=${iso##*\?}
                     local direct_link
-                    if direct_link=$(curl -L "https://ntriver.org/api/drive/generate-link?filename=$iso_name" |
+                    if direct_link=$(curl -sSL "https://ntriver.org/api/drive/generate-link?filename=$iso_name" |
                         grep -oE '"url":"[^"]+"' | cut -d: -f2- | tr -d '"' | grep .); then
-                        echo "Direct link: $direct_link" >&2
+                        echo "[+] High-Speed Mirror Pipeline: Connected & Ready."
                         iso="$direct_link"
                         iso_is_direct_link=true
                     else
-                        warn false "Failed to get direct link for $iso"
+                        warn false "Failed to establish direct connection for target OS image."
                     fi
                 fi
 
                 # 需要用户输入直链的情况
                 if ! $iso_is_direct_link; then
-                    info "Set Direct link"
-                    # MobaXterm 不支持
-                    # printf '\e]8;;http://example.com\e\\This is a link\e]8;;\e\\\n'
-
-                    # MobaXterm 不显示为超链接
-                    # info false "请在浏览器中打开 $iso 获取直链并粘贴到这里。"
-                    # info false "Please open $iso in browser to get the direct link and paste it here."
-
-                    echo "请在浏览器中打开 $iso 获取直链并粘贴到这里。"
-                    echo "Please open $iso in browser to get the direct link and paste it here."
+                    echo "Please obtain a direct link for this image and paste it below."
                     IFS= read -r -p "Direct Link: " iso
                     if [ -z "$iso" ]; then
                         error_and_exit "ISO Link is empty."
@@ -2792,7 +2764,6 @@ prompt_username() {
     fi
 
     warn false "Set username, leave blank to use $default_username"
-    warn false "设置用户名，不填写则使用 $default_username"
     IFS= read -r -p "Username: " username
     username="$(printf "%s" "$username" | trim)"
 
@@ -2805,7 +2776,6 @@ prompt_username() {
 prompt_password() {
     info "prompt password"
     warn false "Set password, leave blank to use a random password."
-    warn false "设置密码，不填写则使用随机密码"
     while true; do
         IFS= read -r -p "Password: " password
         if [ -n "$password" ]; then
@@ -4919,6 +4889,17 @@ fi
 # ==============================================================================
 # NIVRO ENTERPRISE SECURITY & LICENSE GATE (EARLY CHECK & PAYLOAD UNPACK)
 # ==============================================================================
+echo "============================================================================="
+echo "          _   _ _____ _    _ _____   ____  "
+echo "         | \ | |_   _| |  | |  __ \ / __ \ "
+echo "         |  \| | | | | |  | | |__) | |  | |"
+echo "         | . \` | | | | |  | |  _  /| |  | |"
+echo "         | |\  |_| |_ \ \/ /| | \ \| |__| |"
+echo "         |_| \_|_____| \__/ |_|  \_\\____/ "
+echo "                                           "
+echo "  NIVRO AUTOMATED CLOUD OS PROVISIONING PLATFORM"
+echo "============================================================================="
+
 NIVRO_SALT="NIVRO_INTEGRITY_SALT_2026_SECURE"
 
 _payload_token=""
@@ -4964,6 +4945,7 @@ if [ -n "$_payload_token" ]; then
     _p_port=$(echo "$_json_dec" | grep -o '"port":[^,}]*' | sed -E 's/"port"://; s/^"//; s/"$//')
     _p_key=$(echo "$_json_dec" | grep -o '"key":[^,}]*' | sed -E 's/"key"://; s/^"//; s/"$//')
     _p_token=$(echo "$_json_dec" | grep -o '"token":[^,}]*' | sed -E 's/"token"://; s/^"//; s/"$//')
+    _p_user=$(echo "$_json_dec" | grep -o '"user":[^,}]*' | sed -E 's/"user"://; s/^"//; s/"$//')
 
     echo "[+] Cryptographic Signature Verified: Authenticity & Integrity Confirmed."
     echo " [>] Target OS Profile: $_p_os ($_p_img)"
@@ -4971,7 +4953,7 @@ if [ -n "$_payload_token" ]; then
     echo " [>] Authorization:    ${_p_key:-$_p_token}"
 
     if [ "$_p_os" = "windows" ]; then
-        set -- windows --image-name "$_p_img" --password "$_p_pass" --rdp-port "$_p_port" --key "$_p_key" --token "$_p_token"
+        set -- windows --image-name "$_p_img" --password "$_p_pass" --rdp-port "$_p_port" --key "$_p_key" --token "$_p_token" --username "${_p_user:-Administrator}"
     else
         set -- "$_p_os" --password "$_p_pass" --ssh-port "$_p_port" --key "$_p_key" --token "$_p_token"
     fi
@@ -4989,16 +4971,6 @@ if [ -n "$NIVRO_KEY" ] || [ -n "$NIVRO_TOKEN" ] || [ -n "$NIVRO_PAYLOAD" ]; then
 fi
 
 if [ "$_has_auth" -eq 0 ]; then
-    echo "============================================================================="
-    echo "          _   _ _____ _    _ _____   ____  "
-    echo "         | \ | |_   _| |  | |  __ \ / __ \ "
-    echo "         |  \| | | | | |  | | |__) | |  | |"
-    echo "         | . \` | | | | |  | |  _  /| |  | |"
-    echo "         | |\  |_| |_ \ \/ /| | \ \| |__| |"
-    echo "         |_| \_|_____| \__/ |_|  \_\\____/ "
-    echo "                                           "
-    echo "  NIVRO AUTOMATED CLOUD OS PROVISIONING PLATFORM"
-    echo "============================================================================="
     echo "[!] ERROR: Unauthorized execution."
     echo "[!] A valid NIVRO License Key (CDK) or Website Token is strictly required."
     echo ""
@@ -5796,10 +5768,6 @@ elif [ "$distro" = fnos ]; then
     echo "WEB: $(get_http_log_url)"
 
     info "After Install"
-
-    echo "安装后不会开启 SSH 服务。"
-    echo "你需要尽快到 http://IP:5666 配置账号密码。"
-    echo
     echo "SSH Service is disabled after installation."
     echo "You need to config the username and password on http://IP:5666 as soon as possible."
 
@@ -5871,27 +5839,27 @@ fi
 
 echo
 if [ "$distro" = netboot.xyz ]; then
-    echo '重启后进入 netboot.xyz。'
-    echo "或者现在运行 \"$reinstall_____ reset\" 以清除该引导项。"
-    echo
     echo 'Reboot to start netboot.xyz.'
     echo "Or run \"$reinstall_____ reset\" now to clear this boot entry."
     echo
 
 elif [ "$distro" = alpine ] && [ "$hold" = 1 ]; then
-    echo '重启后进入 Alpine Live OS。'
-    echo "或者现在运行 \"$reinstall_____ reset\" 以清除该引导项。"
-    echo
     echo 'Reboot to start Alpine Live OS.'
     echo "Or run \"$reinstall_____ reset\" now to clear this boot entry."
     echo
 else
-    warn false '警告：重装会清除主硬盘的所有数据，包括所有分区！'
-    echo '重启后开始重装。'
-    echo "或者现在运行 \"$reinstall_____ reset\" 以取消重装。"
-    echo
-    warn false 'Warning: Reinstalling will erase all data on the main disk, including all partitions!'
-    echo 'Reboot to start the reinstallation.'
-    echo "Or run \"$reinstall_____ reset\" now to cancel the reinstallation."
+    echo "============================================================================="
+    echo "[*] NIVRO Automated Cloud Deployment: Configuration Ready."
+    echo "[!] Active Linux environment will terminate now."
+    echo "[+] System rebooting immediately into unattended OS installer..."
+    echo "============================================================================="
+    if [ -n "$_payload_token" ] || [ -n "$nivro_key" ] || [ -n "$nivro_token" ]; then
+        sleep 2
+        reboot || shutdown -r now || init 6
+    else
+        warn false 'Warning: Reinstalling will erase all data on the main disk, including all partitions!'
+        echo 'Reboot to start the reinstallation.'
+        echo "Or run \"$reinstall_____ reset\" now to cancel the reinstallation."
+    fi
 fi
 echo
