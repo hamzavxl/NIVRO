@@ -415,8 +415,8 @@ is_allow_ping() {
 setup_nginx() {
     apk add nginx
     # shellcheck disable=SC2154
-    wget $confhome/logviewer.html -O /logviewer.html
-    wget $confhome/logviewer-nginx.conf -O /etc/nginx/http.d/default.conf
+    wget $confhome/logviewer.html -O /logviewer.html || touch /logviewer.html
+    wget $confhome/logviewer-nginx.conf -O /etc/nginx/http.d/default.conf || touch /etc/nginx/http.d/default.conf
 
     sed -i "s/@WEB_PORT@/$web_port/gi" /etc/nginx/http.d/default.conf
 
@@ -435,7 +435,7 @@ setup_websocketd() {
     mkdir -p /tmp/web
     echo 'Wrong Path' >/tmp/web/index.html
     # shellcheck disable=SC2154
-    wget $confhome/logviewer.html -O /tmp/web$web_path
+    wget $confhome/logviewer.html -O /tmp/web$web_path || touch /tmp/web$web_path
 
     killall -q websocketd || true
     # websocketd 遇到 \n 才推送，因此要转换 \r 为 \n
