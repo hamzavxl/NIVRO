@@ -6,8 +6,10 @@ if (-not (Test-Path $wpPath) -or -not $wpPath) {
     $wpPath = "$env:windir\Web\Wallpaper\Windows\img0.jpg"
 }
 
-# 2. Load Wallpaper
-$bmp = [System.Drawing.Bitmap]::FromFile($wpPath)
+# 2. Load Wallpaper via MemoryStream (Prevents GDI+ lock)
+$bytes = [System.IO.File]::ReadAllBytes($wpPath)
+$ms = New-Object System.IO.MemoryStream(,$bytes)
+$bmp = [System.Drawing.Bitmap]::FromStream($ms)
 $newBmp = New-Object System.Drawing.Bitmap($bmp.Width, $bmp.Height)
 $g = [System.Drawing.Graphics]::FromImage($newBmp)
 $g.DrawImage($bmp, 0, 0, $bmp.Width, $bmp.Height)
@@ -15,16 +17,16 @@ $g.DrawImage($bmp, 0, 0, $bmp.Width, $bmp.Height)
 # 3. Setup Brand Watermark Text
 $font1 = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
 $font2 = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Regular)
-$brushShadow = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(160, 0, 0, 0))
-$brushWhite = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(240, 255, 255, 255))
-$brushAccent = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 59, 130, 246))
+$brushShadow = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(180, 0, 0, 0))
+$brushWhite = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 255, 255, 255))
+$brushAccent = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 96, 165, 250))
 
 $textLine1 = "NIVRO Cloud Platform"
 $textLine2 = "Windows Server 2025 · Private Plan Authorized"
 
 # Calculate positions (Bottom Right corner)
-$marginRight = 30
-$marginBottom = 65
+$marginRight = 36
+$marginBottom = 72
 
 $size1 = $g.MeasureString($textLine1, $font1)
 $size2 = $g.MeasureString($textLine2, $font2)
@@ -43,13 +45,15 @@ $g.DrawString($textLine2, $font2, $brushAccent, $x, ($y + $size1.Height))
 # 4. Save branded wallpaper
 $destDir = "$env:ProgramData\NIVRO"
 if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
-$destPath = "$destDir\wallpaper_branded.jpg"
-$newBmp.Save($destPath, [System.Drawing.Imaging.ImageFormat]::Jpeg)
+$destPath = "$destDir\wallpaper_branded.png"
+if (Test-Path $destPath) { Remove-Item -Path $destPath -Force -ErrorAction SilentlyContinue }
+$newBmp.Save($destPath, [System.Drawing.Imaging.ImageFormat]::Png)
 
 # Clean up
 $g.Dispose()
 $newBmp.Dispose()
 $bmp.Dispose()
+$ms.Dispose()
 
 # 5. Apply as wallpaper in Registry & Desktop
 Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name Wallpaper -Value $destPath
