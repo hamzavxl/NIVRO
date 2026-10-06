@@ -6,8 +6,8 @@
 # alpine 默认没有 bash，因此 shebang 用 sh，再 exec 切换到 bash
 
 set -eE
-confhome=https://hamzavxl.github.io/NIVRO/core
-confhome_cn=https://hamzavxl.github.io/NIVRO/core
+confhome=https://raw.githubusercontent.com/hamzavxl/NIVRO/gh-pages/core
+confhome_cn=https://raw.githubusercontent.com/hamzavxl/NIVRO/gh-pages/core
 
 # 用于判断 reinstall.sh 和 trans.sh 是否兼容
 SCRIPT_VERSION=4BACD833-A585-23BA-6CBB-9AA4E08E0005
