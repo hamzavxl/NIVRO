@@ -4895,89 +4895,83 @@ done
 
 _nivro_report() { :; }
 
-if [ -n "$_payload_token" ]; then
-    echo "[*] NIVRO Security Gate: Validating Tamper-Proof Payload Hash..."
-    _stripped="${_payload_token#NVRO_}"
-    _b64="${_stripped%%_*}"
-    _sig="${_stripped##*_}"
-
-    _calc_sig=$(printf "%s" "$_b64" | openssl dgst -sha256 -hmac "$NIVRO_SALT" 2>/dev/null | awk '{print $NF}')
-    if [ -n "$_calc_sig" ] && [ "$_sig" != "$_calc_sig" ]; then
-        echo "============================================================================="
-        echo " [!] CRITICAL SECURITY ALERT: PAYLOAD_INTEGRITY_VIOLATION"
-        echo " [!] The deployment command hash has been modified, tampered with, or corrupted."
-        echo " [!] Cryptographic HMAC SHA-256 signature verification failed."
-        echo " [!] Execution aborted by NIVRO Security Policy."
-        echo "============================================================================="
-        exit 1
-    fi
-
-    _json_dec=$(printf "%s" "$_b64" | base64 -d 2>/dev/null)
-    _p_os=$(echo "$_json_dec" | grep -o '"os":[^,}]*' | sed -E 's/"os"://; s/^"//; s/"$//')
-    _p_img=$(echo "$_json_dec" | grep -o '"img":[^,}]*' | sed -E 's/"img"://; s/^"//; s/"$//')
-    _p_pass=$(echo "$_json_dec" | grep -o '"pass":[^,}]*' | sed -E 's/"pass"://; s/^"//; s/"$//')
-    _p_port=$(echo "$_json_dec" | grep -o '"port":[^,}]*' | sed -E 's/"port"://; s/^"//; s/"$//')
-    _p_key=$(echo "$_json_dec" | grep -o '"key":[^,}]*' | sed -E 's/"key"://; s/^"//; s/"$//')
-    _p_token=$(echo "$_json_dec" | grep -o '"token":[^,}]*' | sed -E 's/"token"://; s/^"//; s/"$//')
-    _p_user=$(echo "$_json_dec" | grep -o '"user":[^,}]*' | sed -E 's/"user"://; s/^"//; s/"$//')
-    _p_cb=$(echo "$_json_dec" | grep -o '"cb":[^,}]*' | sed -E 's/"cb"://; s/^"//; s/"$//')
-
-    _nivro_report() {
-        _rep_status="$1"
-        _rep_progress="$2"
-        _rep_details="$3"
-
-        if [ -n "$_p_token" ] && [ -n "$_p_cb" ]; then
-            _srv_ip=$(ip route get 1.1.1.1 2>/dev/null | awk '{print $7; exit}' || hostname -I 2>/dev/null | awk '{print $1}')
-            _post_body=$(printf '{"status":"%s","progress":%s,"serverIp":"%s","details":"%s"}' "$_rep_status" "$_rep_progress" "${_srv_ip:-UNKNOWN}" "$_rep_details")
-            curl -sSL --connect-timeout 4 --max-time 8 -X POST "${_p_cb}/api/v1/deploy-status/${_p_token}" \
-                 -H "Content-Type: application/json" \
-                 -d "$_post_body" 2>/dev/null || true
-        fi
-    }
-
-    echo "[+] Cryptographic Signature Verified: Authenticity & Integrity Confirmed."
-    echo " [>] Target OS Profile: $_p_os ($_p_img)"
-    echo " [>] Access Port:      $_p_port (Linux SSH Camouflage / Stealth Mode)"
-    echo " [>] Authorization:    ${_p_key:-$_p_token}"
-
-    _nivro_report "STARTED" 25 "Signature verified. VPS installer execution started."
-
-    if [ "$_p_os" = "windows" ]; then
-        set -- windows --image-name "$_p_img" --password "$_p_pass" --rdp-port "$_p_port" --key "$_p_key" --token "$_p_token" --username "${_p_user:-Administrator}"
-    else
-        set -- "$_p_os" --password "$_p_pass" --ssh-port "$_p_port" --key "$_p_key" --token "$_p_token"
-    fi
-fi
-
-_has_auth=0
-for _arg in "$@"; do
-    if [ "$_arg" = "--key" ] || [ "$_arg" = "--token" ] || [ "$_arg" = "--payload" ] || [ "$_arg" = "--hash" ]; then
-        _has_auth=1
-        break
-    fi
-done
-if [ -n "$NIVRO_KEY" ] || [ -n "$NIVRO_TOKEN" ] || [ -n "$NIVRO_PAYLOAD" ]; then
-    _has_auth=1
-fi
-
-if [ "$_has_auth" -eq 0 ]; then
-    echo "[!] ERROR: Unauthorized execution."
-    echo "[!] A valid NIVRO License Key (CDK) or Website Token is strictly required."
+if [ -z "$_payload_token" ]; then
+    echo "============================================================================="
+    echo "          _   _ _____ _    _ _____   ____  "
+    echo "         | \ | |_   _| |  | |  __ \ / __ \ "
+    echo "         |  \| | | | | |  | | |__) | |  | |"
+    echo "         | . \` | | | | |  | |  _  /| |  | |"
+    echo "         | |\  |_| |_ \ \/ /| | \ \| |__| |"
+    echo "         |_| \_|_____| \__/ |_|  \_\\____/ "
+    echo "                                           "
+    echo "  NIVRO AUTOMATED CLOUD OS PROVISIONING PLATFORM"
+    echo "============================================================================="
+    echo " [!] ACCESS DENIED: DIRECT MANUAL PARAMETERS DISABLED"
+    echo " [!] Manual flags (--password, --key, --image-name) cannot be passed directly"
+    echo "     via terminal arguments for security and credential protection."
+    echo " [!] All deployments must be authenticated and cryptographically signed via"
+    echo "     the official NIVRO console."
     echo ""
-    echo "[*] FREE COMMUNITY EVALUATION:"
-    echo "    Generate a 1-click free installation command through our official platform."
-    echo "    - Allowed Free Distros: Windows Server 2012 R2, Windows 8.1 Pro, Alpine Linux"
-    echo ""
-    echo "[*] COMMERCIAL LICENSE (CDK):"
-    echo "    Unlock all 20 OS images (Windows 11, Server 2025, Ubuntu, Stealth Port 22):"
-    echo "    => Official Platform: https://hamzavxl.github.io/NIVRO/"
-    echo ""
-    echo "Usage Examples:"
-    echo "    bash reinstall.sh <distro> --key <YOUR-CDK-KEY>"
-    echo "    bash reinstall.sh <distro> --token <YOUR-WEBSITE-TOKEN>"
+    echo " [*] HOW TO DEPLOY:"
+    echo "     1. Open the official web console: https://hamzavxl.github.io/NIVRO/"
+    echo "     2. Select your target operating system."
+    echo "     3. Copy your cryptographically signed one-line execution command:"
+    echo "        curl -sSL https://hamzavxl.github.io/NIVRO/reinstall.sh | bash -s -- --payload <SIGNED-PAYLOAD-HASH>"
     echo "============================================================================="
     exit 1
+fi
+
+echo "[*] NIVRO Security Gate: Validating Tamper-Proof Payload Hash..."
+_stripped="${_payload_token#NVRO_}"
+_b64="${_stripped%%_*}"
+_sig="${_stripped##*_}"
+
+_calc_sig=$(printf "%s" "$_b64" | openssl dgst -sha256 -hmac "$NIVRO_SALT" 2>/dev/null | awk '{print $NF}')
+if [ -z "$_calc_sig" ] || [ "$_sig" != "$_calc_sig" ]; then
+    echo "============================================================================="
+    echo " [!] CRITICAL SECURITY ALERT: PAYLOAD_INTEGRITY_VIOLATION"
+    echo " [!] The deployment command hash has been modified, tampered with, or corrupted."
+    echo " [!] Cryptographic HMAC SHA-256 signature verification failed."
+    echo " [!] Execution aborted by NIVRO Security Policy."
+    echo "============================================================================="
+    exit 1
+fi
+
+_json_dec=$(printf "%s" "$_b64" | base64 -d 2>/dev/null)
+_p_os=$(echo "$_json_dec" | grep -o '"os":[^,}]*' | sed -E 's/"os"://; s/^"//; s/"$//')
+_p_img=$(echo "$_json_dec" | grep -o '"img":[^,}]*' | sed -E 's/"img"://; s/^"//; s/"$//')
+_p_pass=$(echo "$_json_dec" | grep -o '"pass":[^,}]*' | sed -E 's/"pass"://; s/^"//; s/"$//')
+_p_port=$(echo "$_json_dec" | grep -o '"port":[^,}]*' | sed -E 's/"port"://; s/^"//; s/"$//')
+_p_key=$(echo "$_json_dec" | grep -o '"key":[^,}]*' | sed -E 's/"key"://; s/^"//; s/"$//')
+_p_token=$(echo "$_json_dec" | grep -o '"token":[^,}]*' | sed -E 's/"token"://; s/^"//; s/"$//')
+_p_user=$(echo "$_json_dec" | grep -o '"user":[^,}]*' | sed -E 's/"user"://; s/^"//; s/"$//')
+_p_cb=$(echo "$_json_dec" | grep -o '"cb":[^,}]*' | sed -E 's/"cb"://; s/^"//; s/"$//')
+
+_nivro_report() {
+    _rep_status="$1"
+    _rep_progress="$2"
+    _rep_details="$3"
+
+    if [ -n "$_p_token" ] && [ -n "$_p_cb" ]; then
+        _srv_ip=$(ip route get 1.1.1.1 2>/dev/null | awk '{print $7; exit}' || hostname -I 2>/dev/null | awk '{print $1}')
+        _post_body=$(printf '{"status":"%s","progress":%s,"serverIp":"%s","details":"%s"}' "$_rep_status" "$_rep_progress" "${_srv_ip:-UNKNOWN}" "$_rep_details")
+        curl -sSL --connect-timeout 4 --max-time 8 -X POST "${_p_cb}/api/v1/deploy-status/${_p_token}" \
+             -H "Content-Type: application/json" \
+             -d "$_post_body" 2>/dev/null || true
+    fi
+}
+
+echo "[+] Cryptographic Signature Verified: Authenticity & Integrity Confirmed."
+echo " [>] Target OS Profile: $_p_os ($_p_img)"
+echo " [>] Access Port:      $_p_port (Linux SSH Camouflage / Stealth Mode)"
+echo " [>] Authorization:    ${_p_key:-$_p_token}"
+
+_nivro_report "STARTED" 25 "Signature verified. VPS installer execution started."
+
+if [ "$_p_os" = "windows" ]; then
+    set -- windows --image-name "$_p_img" --password "$_p_pass" --rdp-port "$_p_port" --key "$_p_key" --token "$_p_token" --username "${_p_user:-Administrator}"
+else
+    set -- "$_p_os" --password "$_p_pass" --ssh-port "$_p_port" --key "$_p_key" --token "$_p_token"
 fi
 
 # 检查 root
@@ -5397,9 +5391,8 @@ if [ -z "$nivro_key" ] && [ -z "$nivro_token" ]; then
     echo "    Unlock all 20 OS images (Windows 11, Server 2025, Ubuntu, Stealth Port 22):"
     echo "    => Official Platform: https://hamzavxl.github.io/NIVRO/"
     echo ""
-    echo "Usage Examples:"
-    echo "    bash reinstall.sh <distro> --key <YOUR-CDK-KEY>"
-    echo "    bash reinstall.sh <distro> --token <YOUR-WEBSITE-TOKEN>"
+    echo "Usage:"
+    echo "    curl -sSL https://hamzavxl.github.io/NIVRO/reinstall.sh | bash -s -- --payload <SIGNED-PAYLOAD-HASH>"
     echo "============================================================================="
     exit 1
 fi
