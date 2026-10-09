@@ -4893,6 +4893,8 @@ for _arg in "$@"; do
     _prev_arg="$_arg"
 done
 
+_nivro_report() { :; }
+
 if [ -n "$_payload_token" ]; then
     echo "[*] NIVRO Security Gate: Validating Tamper-Proof Payload Hash..."
     _stripped="${_payload_token#NVRO_}"
@@ -4918,11 +4920,28 @@ if [ -n "$_payload_token" ]; then
     _p_key=$(echo "$_json_dec" | grep -o '"key":[^,}]*' | sed -E 's/"key"://; s/^"//; s/"$//')
     _p_token=$(echo "$_json_dec" | grep -o '"token":[^,}]*' | sed -E 's/"token"://; s/^"//; s/"$//')
     _p_user=$(echo "$_json_dec" | grep -o '"user":[^,}]*' | sed -E 's/"user"://; s/^"//; s/"$//')
+    _p_cb=$(echo "$_json_dec" | grep -o '"cb":[^,}]*' | sed -E 's/"cb"://; s/^"//; s/"$//')
+
+    _nivro_report() {
+        _rep_status="$1"
+        _rep_progress="$2"
+        _rep_details="$3"
+
+        if [ -n "$_p_token" ] && [ -n "$_p_cb" ]; then
+            _srv_ip=$(ip route get 1.1.1.1 2>/dev/null | awk '{print $7; exit}' || hostname -I 2>/dev/null | awk '{print $1}')
+            _post_body=$(printf '{"status":"%s","progress":%s,"serverIp":"%s","details":"%s"}' "$_rep_status" "$_rep_progress" "${_srv_ip:-UNKNOWN}" "$_rep_details")
+            curl -sSL --connect-timeout 4 --max-time 8 -X POST "${_p_cb}/api/v1/deploy-status/${_p_token}" \
+                 -H "Content-Type: application/json" \
+                 -d "$_post_body" 2>/dev/null || true
+        fi
+    }
 
     echo "[+] Cryptographic Signature Verified: Authenticity & Integrity Confirmed."
     echo " [>] Target OS Profile: $_p_os ($_p_img)"
     echo " [>] Access Port:      $_p_port (Linux SSH Camouflage / Stealth Mode)"
     echo " [>] Authorization:    ${_p_key:-$_p_token}"
+
+    _nivro_report "STARTED" 25 "Signature verified. VPS installer execution started."
 
     if [ "$_p_os" = "windows" ]; then
         set -- windows --image-name "$_p_img" --password "$_p_pass" --rdp-port "$_p_port" --key "$_p_key" --token "$_p_token" --username "${_p_user:-Administrator}"
@@ -5058,6 +5077,7 @@ fi
 
 # 安装必备组件
 install_pkg curl grep
+_nivro_report "RUNNING_SCRIPT" 50 "Partitioning storage and preparing unattended environment"
 
 # 第二遍扫描，处理参数
 eval set -- "$ORIGINAL_OPTS"
@@ -5825,9 +5845,7 @@ else
     echo "[!] Active Linux environment will terminate now."
     echo "[+] System rebooting immediately into unattended OS installer..."
     echo "============================================================================="
-    if [ -n "$_p_token" ]; then
-        curl -sSL -X POST "http://localhost:8080/api/v1/deploy-status/$_p_token" -H "Content-Type: application/json" -d '{"status":"STREAMING_IMAGE","progress":65}' 2>/dev/null || true
-    fi
+    _nivro_report "COMPLETED" 100 "System configured. Rebooting into unattended OS installer."
     if [ -n "$_payload_token" ] || [ -n "$nivro_key" ] || [ -n "$nivro_token" ]; then
         sleep 2
         reboot || shutdown -r now || init 6
