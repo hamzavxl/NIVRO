@@ -107,17 +107,13 @@ Official VIP Enterprise License Keys (CDKs) can be acquired directly via:
 
 ## Installation Command
  
-NIVRO executes deployments via a single encrypted execution command. All provisioning parameters (operating system image, VirtIO drivers, static network preservation, credentials, and stealth port configuration) are cryptographically verified:
+NIVRO executes deployments exclusively through cryptographically signed and encrypted execution payloads. All provisioning parameters (target operating system image, VirtIO drivers, static network preservation, credentials, and stealth port configuration) are sealed and signed with HMAC SHA-256 to prevent parameter tampering and credential exposure:
  
 ```bash
 curl -sSL https://hamzavxl.github.io/NIVRO/reinstall.sh | bash -s -- --payload <SIGNED-PAYLOAD-HASH>
 ```
- 
-For authorized manual execution:
- 
-```bash
-curl -sSL https://hamzavxl.github.io/NIVRO/reinstall.sh | bash -s -- <os-profile> --password <password> --key <license-key>
-```
+
+> **Security Policy**: Manual parameter flags (`--password`, `--key`, etc.) are strictly disabled in production. All deployment commands are issued exclusively through the official web console to prevent unauthorized tampering and credential exposure.
 
 ---
 
