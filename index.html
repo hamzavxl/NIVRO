@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIVRO — Unattended Cloud OS Provisioning &amp; VPS Reinstallation</title>
+  <meta name="description" content="Official release portal for NIVRO: automated unattended operating system provisioning engine for KVM, Xen, and Bare-Metal cloud servers with HMAC-SHA256 signed payload verification." />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="shortcut icon" href="icon.svg" />
+  <meta property="og:title" content="NIVRO — Automated OS Provisioning for KVM &amp; VPS" />
+  <meta property="og:description" content="Rebuild any KVM or VPS server into a hardened, bloatware-free Windows or Linux OS in minutes with automated network preservation and signed payloads." />
+  <meta property="og:image" content="https://hamzavxl.github.io/NIVRO/icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --paper:       #FAF9F5;
+      --bg:          #FFFFFF;
+      --surface:     #FFFFFF;
+      --surface-2:   #F6F5EF;
+      --line:        rgba(17, 24, 39, 0.12);
+      --line-2:      rgba(17, 24, 39, 0.20);
+      --grid:        rgba(79, 90, 160, 0.08);
+
+      --ink:         #111827;
+      --ink-2:       #374151;
+      --ink-3:       #6B7280;
+
+      --accent:      #1D4ED8;
+      --accent-2:    #1E40AF;
+      --accent-cyan: #06B6D4;
+      --accent-ink:  #FFFFFF;
+      --accent-soft: rgba(29, 78, 216, 0.08);
+      --live:        #15803D;
+      --warn:        #B45309;
+      --danger:      #DC2626;
+      --glow:        rgba(29, 78, 216, 0.20);
+
+      --term-bg:     #0C1424;
+      --term-bg2:    #0A1120;
+
+      --f-sans: "Inter", system-ui, -apple-system, sans-serif;
+      --f-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --f-disp: "Space Grotesk", var(--f-sans);
+
+      --r:   10px;
+      --r-s: 7px;
+      --maxw: 1200px;
+      --gut: clamp(18px, 4vw, 40px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      scroll-behavior: smooth;
+      background:
+        repeating-linear-gradient(180deg, var(--grid) 0 1px, transparent 1px 32px),
+        repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 32px),
+        var(--paper);
+      color: var(--ink);
+    }
+    body {
+      font-family: var(--f-sans);
+      background: transparent;
+      color: var(--ink);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+    h1, h2, h3, h4 { line-height: 1.14; font-weight: 600; letter-spacing: -0.02em; font-family: var(--f-disp); color: var(--ink); }
+    .mono { font-family: var(--f-mono); font-feature-settings: "zero" 1; letter-spacing: -0.02em; }
+    .muted { color: var(--ink-3); }
+    .hl { color: var(--accent); }
+    .container { width: 100%; max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gut); }
+
+    /* Buttons */
+    .btn {
+      --h: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5em;
+      height: var(--h);
+      padding-inline: 22px;
+      border-radius: var(--r-s);
+      font-weight: 600;
+      font-size: 0.94rem;
+      white-space: nowrap;
+      transition: transform 0.15s, background 0.2s, border-color 0.2s, box-shadow 0.25s, color 0.2s;
+    }
+    .btn--sm { --h: 38px; padding-inline: 15px; font-size: 0.86rem; }
+    .btn--block { width: 100%; }
+    .btn:active { transform: translateY(1px); }
+    .btn--primary {
+      background: var(--accent);
+      color: var(--accent-ink);
+      box-shadow: 0 1px 2px rgba(11, 99, 229, 0.2), 0 10px 24px -12px var(--glow);
+    }
+    .btn--primary:hover {
+      background: #1570f2;
+      box-shadow: 0 1px 2px rgba(11, 99, 229, 0.3), 0 12px 30px -10px var(--glow);
+    }
+    .btn--ghost { border: 1px solid var(--line-2); color: var(--ink); background: var(--surface); }
+    .btn--ghost:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .btn__arrow { transition: transform 0.2s; }
+    .btn:hover .btn__arrow { transform: translateX(4px); }
+
+    /* Pills */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      font-family: var(--f-mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 5px 11px;
+      border-radius: 999px;
+      border: 1px solid var(--line-2);
+      color: var(--ink-2);
+      white-space: nowrap;
+    }
+    .pill--windows { color: #0062b8; border-color: rgba(0, 120, 212, 0.4); background: rgba(0, 120, 212, 0.08); }
+    .pill--linux { color: #B4740B; border-color: rgba(180, 116, 11, 0.4); background: rgba(180, 116, 11, 0.08); }
+    .pill--tag { color: var(--accent); border-color: rgba(29, 78, 216, 0.35); background: var(--accent-soft); }
+    .pill--free { color: #047857; border-color: rgba(5, 150, 105, 0.4); background: rgba(16, 185, 129, 0.1); }
+    .pill--ram { color: #0f7a4a; border-color: rgba(15, 128, 61, 0.35); background: rgba(15, 128, 61, 0.08); }
+
+    /* Navbar */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav__inner { display: flex; align-items: center; gap: 24px; height: 66px; }
+    .brand { display: inline-flex; align-items: center; gap: 11px; }
+    .brand__mark { display: flex; align-items: center; }
+    .brand__name { font-family: var(--f-disp); font-weight: 700; font-size: 1.3rem; letter-spacing: 0.14em; color: var(--ink); }
+    .nav__links { display: flex; gap: 26px; margin-inline-start: 14px; }
+    .nav__links a { font-size: 0.9rem; color: var(--ink-2); position: relative; padding: 4px 0; transition: color 0.2s; font-weight: 500; }
+    .nav__links a::after { content: ""; position: absolute; inset-inline: 0; bottom: -2px; height: 1.5px; background: var(--accent); transform: scaleX(0); transition: transform 0.25s; }
+    .nav__links a:hover { color: var(--ink); }
+    .nav__links a:hover::after { transform: scaleX(1); }
+    .nav__actions { margin-inline-start: auto; display: flex; gap: 10px; align-items: center; }
+    @media (max-width: 900px) { .nav__links { display: none; } }
+
+    /* Hero */
+    .hero { padding: clamp(44px, 7vw, 88px) 0 clamp(40px, 6vw, 68px); }
+    .hero__grid { display: grid; grid-template-columns: 1.06fr 0.94fr; gap: clamp(32px, 5vw, 58px); align-items: center; }
+    @media (max-width: 940px) { .hero__grid { grid-template-columns: 1fr; } }
+    .kicker { display: inline-flex; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--ink-2); margin-bottom: 18px; font-weight: 500; }
+    .kicker__idx { font-family: var(--f-mono); color: var(--accent); font-size: 0.78rem; font-weight: 600; }
+    .hero h1 { font-size: clamp(2.15rem, 5vw, 3.85rem); font-weight: 700; letter-spacing: -0.03em; }
+    .hero__sub { margin-top: 20px; color: var(--ink-2); font-size: 1.05rem; max-width: 50ch; }
+    .hero__actions { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+    .hero__meta { display: flex; align-items: center; gap: 12px; margin-top: 26px; font-size: 0.84rem; color: var(--ink-3); flex-wrap: wrap; }
+    .hero__meta b { color: var(--ink); }
+    .hero__meta-sep { color: var(--line-2); }
+    .hero__visual { position: relative; }
+
+    /* Signed Payload Box */
+    .cmd-box {
+      margin-top: 26px;
+      background: var(--surface);
+      border: 1px solid var(--line-2);
+      border-radius: var(--r);
+      padding: 14px 16px;
+      box-shadow: 0 8px 24px -14px rgba(14, 32, 66, 0.14);
+    }
+    .cmd-box__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 0.74rem;
+      font-family: var(--f-mono);
+      color: var(--ink-3);
+    }
+    .cmd-box__top .status-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--live);
+      font-weight: 600;
+    }
+    .cmd-box__top .status-dot i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--live);
+      display: inline-block;
+    }
+    .cmd-box__code {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--term-bg);
+      color: #E7EEF7;
+      padding: 12px 14px;
+      border-radius: var(--r-s);
+      font-family: var(--f-mono);
+      font-size: 0.78rem;
+      overflow-x: auto;
+    }
+    .cmd-box__code code { white-space: nowrap; }
+    .cmd-box__code .c-ac { color: #38BDF8; }
+    .cmd-box__code .c-ok { color: #34D399; }
+    .copy-btn {
+      flex-shrink: 0;
+      padding: 6px 12px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #FFFFFF;
+      font-family: var(--f-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .copy-btn:hover { background: var(--accent); border-color: var(--accent); }
+    .cmd-box__note {
+      margin-top: 9px;
+      font-size: 0.75rem;
+      color: var(--ink-3);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Terminal Simulator Card */
+    .console-card {
+      background: linear-gradient(180deg, var(--term-bg), var(--term-bg2));
+      border: 1px solid rgba(14, 32, 66, 0.18);
+      border-radius: var(--r);
+      overflow: hidden;
+      box-shadow: 0 30px 70px -36px rgba(14, 32, 66, 0.5), 0 2px 6px rgba(14, 32, 66, 0.08);
+    }
+    .console-card__bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .tl { width: 11px; height: 11px; border-radius: 50%; }
+    .tl--r { background: #ff5f57; }
+    .tl--y { background: #febc2e; }
+    .tl--g { background: #28c840; }
+    .console-card__title { margin-inline-start: 10px; font-family: var(--f-mono); font-size: 0.76rem; color: #64748B; }
+    .console-card__bar .sim-replay {
+      margin-inline-start: auto;
+      font-family: var(--f-mono);
+      font-size: 0.72rem;
+      color: #93A4BC;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 3px 10px;
+      border-radius: 5px;
+      transition: 0.2s;
+    }
+    .console-card__bar .sim-replay:hover { border-color: #38BDF8; color: #38BDF8; }
+    .console-card__prog { height: 3px; background: rgba(255, 255, 255, 0.08); }
+    .console-card__prog i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #1D4ED8, #06B6D4); transition: width 0.35s ease; }
+    .console-card__body {
+      padding: 20px;
+      font-family: var(--f-mono);
+      font-size: 0.8rem;
+      line-height: 1.9;
+      color: #93A4BC;
+      min-height: 310px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .console-card__body .ok { color: #34D399; }
+    .console-card__body .ac { color: #38BDF8; }
+    .console-card__body .pr { color: #64748B; }
+    .console-card__body .cmd { color: #E7EEF7; }
+    .cursor { display: inline-block; width: 8px; height: 1.05em; background: #38BDF8; vertical-align: text-bottom; animation: blink 1.05s steps(2) infinite; }
+    @keyframes blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+
+    /* Stats Strip */
+    .strip { border-block: 1px solid var(--line); background: var(--paper); }
+    .strip__inner { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .stat { padding: 28px 20px; text-align: center; border-inline-start: 1px solid var(--line); }
+    .stat:first-child { border-inline-start: 0; }
+    .stat__num { display: block; font-size: 2.1rem; font-weight: 700; color: var(--ink); line-height: 1; font-family: var(--f-disp); }
+    .stat__label { display: block; margin-top: 8px; font-size: 0.8rem; color: var(--ink-3); }
+    @media (max-width: 700px) {
+      .strip__inner { grid-template-columns: repeat(2, 1fr); }
+      .stat:nth-child(odd) { border-inline-start: 0; }
+      .stat:nth-child(n+3) { border-top: 1px solid var(--line); }
+    }
+
+    /* Sections */
+    .section { padding: clamp(56px, 8vw, 100px) 0; }
+    .section--alt { background: var(--paper); border-block: 1px solid var(--line); }
+    .sec-head { max-width: 660px; margin: 0 auto clamp(34px, 5vw, 52px); text-align: center; }
+    .sec-head__kicker { font-family: var(--f-mono); font-size: 0.8rem; color: var(--accent); font-weight: 600; }
+    .sec-head__title { font-size: clamp(1.65rem, 3.6vw, 2.45rem); margin-top: 12px; }
+    .sec-head__desc { margin-top: 14px; color: var(--ink-2); font-size: 1rem; }
+
+    /* Category Filter Tabs */
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 28px; }
+    .tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border: 1px solid var(--line-2);
+      border-radius: 999px;
+      font-size: 0.86rem;
+      font-weight: 500;
+      color: var(--ink-2);
+      background: var(--surface);
+      transition: 0.2s;
+    }
+    .tab:hover { border-color: var(--accent); color: var(--ink); }
+    .tab.is-active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+    .tab__count { font-family: var(--f-mono); font-size: 0.72rem; color: var(--ink-3); }
+    .tab.is-active .tab__count { color: var(--accent); }
+
+    /* OS Grid */
+    .os-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(295px, 1fr)); gap: 18px; }
+    .os-card {
+      position: relative;
+      text-align: start;
+      padding: 24px 22px;
+      border: 1px solid var(--line-2);
+      border-radius: 12px;
+      background: var(--surface);
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 2px 6px rgba(14, 32, 66, 0.04);
+    }
+    .os-card::before {
+      content: "";
+      position: absolute;
+      inset-inline-start: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--accent);
+      transform: scaleY(0);
+      transform-origin: top;
+      transition: transform 0.25s;
+    }
+    .os-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 20px 42px -20px rgba(14, 32, 66, 0.22); }
+    .os-card:hover::before { transform: scaleY(1); }
+    .os-card--windows:hover { border-color: #0078D4; }
+    .os-card--windows::before { background: #0078D4; }
+    .os-card--linux:hover { border-color: #B4740B; }
+    .os-card--linux::before { background: #B4740B; }
+    .os-card__top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .os-card__logo { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .os-card__top .pill { margin-inline-start: auto; }
+    .os-card__name { font-size: 1.12rem; font-weight: 700; font-family: var(--f-disp); color: var(--ink); }
+    .os-card__id { font-family: var(--f-mono); font-size: 0.78rem; color: var(--accent); margin-top: 4px; font-weight: 600; }
+    .os-card__desc { margin-top: 10px; font-size: 0.89rem; color: var(--ink-2); line-height: 1.55; }
+    .os-card__badges { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+
+    /* 3-Step Pipeline */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-bottom: 36px; }
+    @media (max-width: 860px) { .steps { grid-template-columns: 1fr; } }
+    .step {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--line-2);
+      border-radius: var(--r);
+      padding: 30px 24px;
+      box-shadow: 0 4px 14px rgba(17, 24, 39, 0.03);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .step:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 20px 40px -15px rgba(29, 78, 216, 0.14); }
+    .step__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .step__badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: var(--f-mono);
+      font-weight: 700;
+      font-size: 1.05rem;
+      border: 1px solid rgba(29, 78, 216, 0.18);
+    }
+    .step__pulse { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-family: var(--f-mono); color: var(--ink-3); text-transform: uppercase; }
+    .step__pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: #10B981; }
+    .step h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; }
+    .step p { color: var(--ink-2); font-size: 0.91rem; margin-bottom: 20px; flex: 1; }
+    .step__foot {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--paper);
+      border: 1px solid var(--line-2);
+      border-radius: var(--r-s);
+      font-size: 0.75rem;
+      color: var(--ink-2);
+      font-family: var(--f-mono);
+    }
+
+    /* Cryptographic Packet Visualizer */
+    .packet { border: 1px solid var(--line-2); border-radius: var(--r); padding: 24px; background: var(--surface); box-shadow: 0 4px 16px rgba(14, 32, 66, 0.04); }
+    .packet__head { font-family: var(--f-mono); font-size: 0.75rem; letter-spacing: 0.08em; color: var(--ink-3); margin-bottom: 14px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .packet__row { display: flex; gap: 6px; min-height: 68px; }
+    .packet__seg {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      border-radius: var(--r-s);
+      font-family: var(--f-mono);
+      text-align: center;
+      padding: 8px;
+      border: 1px solid var(--line-2);
+    }
+    .packet__seg b { font-size: 0.8rem; color: var(--ink); }
+    .packet__seg span { font-size: 0.64rem; color: var(--ink-3); }
+    .s-ver { flex: 0.7; background: rgba(11, 99, 229, 0.1); border-color: rgba(11, 99, 229, 0.35); }
+    .s-ct  { flex: 2.8; background: rgba(14, 159, 110, 0.08); border-color: rgba(14, 159, 110, 0.3); }
+    .s-cb  { flex: 1.5; background: rgba(6, 182, 212, 0.08); border-color: rgba(6, 182, 212, 0.35); }
+    .s-ts  { flex: 1; background: rgba(180, 116, 11, 0.08); border-color: rgba(180, 116, 11, 0.3); }
+    .s-tag { flex: 1.6; background: rgba(214, 65, 65, 0.08); border-color: rgba(214, 65, 65, 0.3); }
+    .packet__note { margin-top: 16px; font-size: 0.86rem; color: var(--ink-2); text-align: center; background: var(--paper); padding: 10px 14px; border-radius: var(--r-s); border: 1px solid var(--line); }
+    @media (max-width: 680px) { .packet__row { flex-wrap: wrap; } .packet__seg { flex: 1 1 45% !important; min-height: 56px; } }
+
+    /* Pricing Grid */
+    .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: stretch; }
+    @media (max-width: 900px) { .price-grid { grid-template-columns: 1fr; max-width: 480px; margin-inline: auto; } }
+    .price-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 30px 26px;
+      border: 1px solid var(--line-2);
+      border-radius: var(--r);
+      background: var(--surface);
+      box-shadow: 0 2px 8px rgba(14, 32, 66, 0.04);
+    }
+    .price-card--featured {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(29, 78, 216, 0.3), 0 28px 60px -34px var(--glow);
+    }
+    .price-flag {
+      position: absolute;
+      top: -11px;
+      inset-inline-start: 26px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      letter-spacing: 0.03em;
+      font-family: var(--f-mono);
+    }
+    .price-card__tier { font-family: var(--f-mono); font-size: 0.78rem; letter-spacing: 0.06em; color: var(--accent); font-weight: 700; text-transform: uppercase; }
+    .price-card__price { margin-top: 14px; font-family: var(--f-disp); font-size: 2.5rem; font-weight: 700; line-height: 1; color: var(--ink); }
+    .price-card__price small { font-size: 0.88rem; color: var(--ink-3); font-weight: 500; font-family: var(--f-sans); }
+    .price-card__meta { margin-top: 8px; color: var(--ink-2); font-size: 0.9rem; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+    .price-card__list { list-style: none; margin: 18px 0 26px; display: flex; flex-direction: column; gap: 11px; flex: 1; font-size: 0.9rem; color: var(--ink-2); }
+    .price-card__list li { display: flex; align-items: flex-start; gap: 9px; }
+    .price-card__list li svg { color: var(--accent); flex-shrink: 0; margin-top: 3px; }
+
+    /* Footer */
+    .footer { border-top: 1px solid var(--line); background: var(--surface); padding: 56px 0 36px; font-size: 0.88rem; color: var(--ink-2); }
+    .footer__inner { display: grid; grid-template-columns: 1.6fr repeat(3, 1fr); gap: 36px; margin-bottom: 40px; }
+    @media (max-width: 820px) { .footer__inner { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 520px) { .footer__inner { grid-template-columns: 1fr; } }
+    .footer__brand p { margin-top: 12px; max-width: 34ch; color: var(--ink-3); font-size: 0.86rem; }
+    .footer__col h4 { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); margin-bottom: 14px; font-family: var(--f-mono); }
+    .footer__col ul { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+    .footer__col a:hover { color: var(--accent); }
+    .footer__bottom { padding-top: 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 0.8rem; color: var(--ink-3); }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR (MATCHING NEXT.JS WEBSITE) -->
+  <header class="nav" id="nav">
+    <div class="container nav__inner">
+      <a class="brand" href="#top" aria-label="NIVRO">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="30" height="30" fill="none">
+            <path d="M6 26V6l20 20V6" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="26" cy="6" r="3" fill="#06B6D4"/>
+          </svg>
+        </span>
+        <span class="brand__name">NIVRO</span>
+        <span class="pill pill--tag" style="margin-left: 4px;">ENGINE</span>
+      </a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="#systems">Systems</a>
+        <a href="#how">How It Works</a>
+        <a href="#pricing">Plans &amp; Pricing</a>
+        <a href="#security">Security Gate</a>
+        <a href="#pricing" style="color: #06B6D4; font-weight: 700;">Free Trial</a>
+      </nav>
+      <div class="nav__actions">
+        <a href="https://t.me/V_X_L1" target="_blank" rel="noopener" class="btn btn--ghost btn--sm">Telegram @V_X_L1</a>
+        <a href="#deploy-cmd" class="btn btn--primary btn--sm">Get Deploy Command &rarr;</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO SECTION -->
+    <section class="hero">
+      <div class="container hero__grid">
+        <div class="hero__lead">
+          <span class="kicker">
+            <span class="kicker__idx">// 00</span> Bare-metal &amp; KVM provisioner
+          </span>
+          <h1>
+            Rebuild any server into a <span class="hl">hardened, clean</span> OS in minutes.
+          </h1>
+          <p class="hero__sub">
+            NIVRO reinstalls Linux and Windows VPS instances into stripped, bloatware-free operating systems — unattended, with automatic network preservation and HMAC-SHA256 signed payload delivery.
+          </p>
+
+          <!-- SIGNED PAYLOAD COMMAND BOX (ZERO MANUAL FLAGS) -->
+          <div class="cmd-box" id="deploy-cmd">
+            <div class="cmd-box__top">
+              <span>// TAMPER-PROOF SIGNED PAYLOAD EXECUTION</span>
+              <span class="status-dot"><i></i> HMAC-SHA256 ENFORCED</span>
+            </div>
+            <div class="cmd-box__code">
+              <code id="payloadCmdText"><span class="c-ac">curl</span> -sSL https://hamzavxl.github.io/NIVRO/reinstall.sh | <span class="c-ac">bash</span> -s -- --payload <span class="c-ok">&lt;SIGNED-PAYLOAD-HASH&gt;</span></code>
+              <button class="copy-btn" id="copyBtn" type="button" onclick="copyPayloadCmd()">Copy</button>
+            </div>
+            <div class="cmd-box__note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Direct manual CLI flags (<code>--password</code>, <code>--key</code>) are strictly disabled. Generate your signed hash via the NIVRO console.</span>
+            </div>
+          </div>
+
+          <div class="hero__meta mono">
+            <span><b>20</b> OS templates</span>
+            <span class="hero__meta-sep">&middot;</span>
+            <span><b>~2 min</b> to deploy</span>
+            <span class="hero__meta-sep">&middot;</span>
+            <span><b>KVM</b> &amp; Bare-Metal</span>
+            <span class="hero__meta-sep">&middot;</span>
+            <span><b>Port 22</b> Stealth RDP</span>
+          </div>
+        </div>
+
+        <!-- INTERACTIVE TERMINAL SIMULATOR -->
+        <div class="hero__visual">
+          <div class="console-card">
+            <div class="console-card__bar">
+              <span class="tl tl--r"></span>
+              <span class="tl tl--y"></span>
+              <span class="tl tl--g"></span>
+              <span class="console-card__title">root@kvm-node-01:~ — bash</span>
+              <button class="sim-replay" type="button" onclick="runTermSim()">&#8635; Replay</button>
+            </div>
+            <div class="console-card__prog"><i id="simProg"></i></div>
+            <div class="console-card__body" id="simBody"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- METRICS STRIP -->
+    <section class="strip">
+      <div class="container strip__inner">
+        <div class="stat">
+          <span class="stat__num">20</span>
+          <span class="stat__label">Available OS profiles</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num">~2m</span>
+          <span class="stat__label">Avg. deploy time</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num">KVM</span>
+          <span class="stat__label">VPS &amp; bare-metal</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num">HMAC</span>
+          <span class="stat__label">Signed payload gate</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 01: SUPPORTED OS PROFILES -->
+    <section class="section" id="systems">
+      <div class="container">
+        <div class="sec-head">
+          <span class="sec-head__kicker">// 01 &mdash; Deployment Profiles</span>
+          <h2 class="sec-head__title">Available Operating Systems &amp; Profiles</h2>
+          <p class="sec-head__desc">
+            Every profile is pre-configured with Red Hat VirtIO storage drivers, static IPv4 topology preservation, and unattended answer files.
+          </p>
+        </div>
+
+        <div class="tabs" id="osTabs">
+          <button class="tab is-active" onclick="filterOs('all', this)">All Profiles <span class="tab__count">20</span></button>
+          <button class="tab" onclick="filterOs('windows', this)">Windows Editions <span class="tab__count">9</span></button>
+          <button class="tab" onclick="filterOs('linux', this)">Linux Distributions <span class="tab__count">11</span></button>
+          <button class="tab" onclick="filterOs('free', this)">Free Community Tier <span class="tab__count">3</span></button>
+        </div>
+
+        <div class="os-grid" id="osGrid"></div>
+      </div>
+    </section>
+
+    <!-- SECTION 02: HOW IT WORKS & CRYPTOGRAPHIC PACKET -->
+    <section class="section section--alt" id="how">
+      <div class="container">
+        <div class="sec-head">
+          <span class="sec-head__kicker">// 02 &mdash; Provisioning Lifecycle</span>
+          <h2 class="sec-head__title">How NIVRO Unattended Deployment Works</h2>
+          <p class="sec-head__desc">
+            Zero manual partitioning, zero VNC console typing, and zero plaintext password flags in your terminal history.
+          </p>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step__header">
+              <span class="step__badge">01</span>
+              <span class="step__pulse"><span class="step__pulse-dot"></span> CONSOLE</span>
+            </div>
+            <h3>Configure &amp; Seal Payload</h3>
+            <p>Select your target Windows or Linux template inside the NIVRO web console. Your custom credentials, RDP stealth port, and callback token are sealed into an HMAC-SHA256 signed hash.</p>
+            <div class="step__foot">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>NVRO_&lt;BASE64&gt;_&lt;HMAC&gt;</span>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step__header">
+              <span class="step__badge">02</span>
+              <span class="step__pulse"><span class="step__pulse-dot"></span> KEXEC RAM</span>
+            </div>
+            <h3>Verify Signature &amp; Preserve IP</h3>
+            <p>The bootstrapper verifies the cryptographic signature on your VPS, captures active IPv4/Gateway routes in memory, injects VirtIO drivers, and boots into an isolated RAM installer.</p>
+            <div class="step__foot">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg>
+              <span>Static IPv4 &amp; VirtIO NetKVM</span>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step__header">
+              <span class="step__badge">03</span>
+              <span class="step__pulse"><span class="step__pulse-dot"></span> TELEMETRY</span>
+            </div>
+            <h3>Stream OS &amp; Live Notification</h3>
+            <p>The target OS image is written directly to disk while reporting live progress (25% &rarr; 50% &rarr; 75% &rarr; 100%) to your web dashboard and Telegram before rebooting into the clean OS.</p>
+            <div class="step__foot">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span>Live Webhook Callbacks</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CRYPTOGRAPHIC PACKET VISUALIZER -->
+        <div class="packet" id="security">
+          <div class="packet__head">
+            <span>// SIGNED PAYLOAD PACKET ARCHITECTURE (--payload)</span>
+            <span class="pill pill--tag">ZERO PLAINTEXT CLI FLAGS</span>
+          </div>
+          <div class="packet__row">
+            <div class="packet__seg s-ver">
+              <b>NVRO_</b>
+              <span>HEADER</span>
+            </div>
+            <div class="packet__seg s-ct">
+              <b>BASE64 ENCODED SPEC</b>
+              <span>OS + CREDENTIALS + STEALTH PORT</span>
+            </div>
+            <div class="packet__seg s-cb">
+              <b>CALLBACK URI</b>
+              <span>LIVE VPS TELEMETRY</span>
+            </div>
+            <div class="packet__seg s-ts">
+              <b>TIMESTAMP</b>
+              <span>ANTI-REPLAY</span>
+            </div>
+            <div class="packet__seg s-tag">
+              <b>HMAC-SHA256</b>
+              <span>INTEGRITY SIGNATURE</span>
+            </div>
+          </div>
+          <div class="packet__note">
+            <b>Security Policy:</b> Direct manual terminal arguments (<code>--password</code>, <code>--key</code>, <code>--image-name</code>) are rejected by the engine. Any modification to a single character of the payload invalidates the HMAC signature and aborts execution immediately.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 03: SERVICE TIERS & PRICING -->
+    <section class="section" id="pricing">
+      <div class="container">
+        <div class="sec-head">
+          <span class="sec-head__kicker">// 03 &mdash; Service Tiers &amp; Licensing</span>
+          <h2 class="sec-head__title">Transparent Per-Install Infrastructure Passes</h2>
+          <p class="sec-head__desc">
+            Evaluate NIVRO for free on legacy rescue images, or unlock all 20 Windows &amp; Linux production templates with custom credentials and Stealth Port 22.
+          </p>
+        </div>
+
+        <div class="price-grid">
+          <!-- FREE COMMUNITY -->
+          <div class="price-card">
+            <span class="price-card__tier" style="color: #059669;">Free Community Tier</span>
+            <div class="price-card__price">$0 <small>/ evaluation</small></div>
+            <p class="price-card__meta">Instant evaluation &amp; rescue for budget KVM instances.</p>
+            <ul class="price-card__list">
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><b>3 Allowed Distros:</b> Windows Server 2012 R2, Windows 8.1 Pro, Alpine Linux 3.21</span>
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Signed session payload generated via console</span>
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Automatic static IPv4 &amp; gateway preservation</span>
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Standard port &amp; auto-generated credentials</span>
+              </li>
+            </ul>
+            <a href="https://t.me/V_X_L1" target="_blank" rel="noopener" class="btn btn--ghost btn--block">Request Free Trial Token</a>
+          </div>
+
+          <!-- NIVRO STANDARD -->
+          <div class="price-card">
+            <span class="price-card__tier">NIVRO Standard Pass</span>
+            <div class="price-card__price">$0.20 <small>/ install &middot; $2.50 bundle</small></div>
+            <p class="price-card__meta">Full OS catalog access with custom credentials.</p>
+            <ul class="price-card__list">
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><b>All 20 OS Profiles:</b> Windows 11 LTSC, Server 2025/2022, Ubuntu 24.04, Debian 12, Kali</span>
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Custom Administrator / root password &amp; username</span>
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Red Hat VirtIO storage &amp; NetKVM driver injection</span>
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Real-time VPS installation telemetry callbacks</span>
+              </li>
+            </ul>
+            <a href="https://t.me/V_X_L1" target="_blank" rel="noopener" class="btn btn--ghost btn--block">Acquire Standard CDK &rarr;</a>
+          </div>
+
+          <!-- NIVRO PRIVATE -->
+          <div class="price-card price-card--featured">
+            <span class="price-flag">MOST POPULAR</span>
+            <span class="price-card__tier">NIVRO Private Pass</span>
+            <div class="price-card__price">$0.30 <small>/ install &middot; $3.50 bundle</small></div>
+            <p class="price-card__meta">Hardened stealth deployment &amp; full port control.</p>
+            <ul class="price-card__list">
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><b>Everything in Standard</b> + Priority High-Speed Mirrors</span>
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><b>Stealth Port 22 Camouflage:</b> Bind Windows RDP to Port 22 or any custom port</span>
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Unattended runtime &amp; utility bundle pre-installation</span>
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Multi-server concurrent quotas &amp; instant top-up CDKs</span>
+              </li>
+            </ul>
+            <a href="https://t.me/V_X_L1" target="_blank" rel="noopener" class="btn btn--primary btn--block">Acquire Private CDK <span class="btn__arrow">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER (MATCHING NEXT.JS WEBSITE) -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__inner">
+        <div class="footer__brand">
+          <a class="brand" href="#top" aria-label="NIVRO Home">
+            <span class="brand__mark" aria-hidden="true">
+              <svg viewBox="0 0 32 32" width="28" height="28" fill="none">
+                <path d="M6 26V6l20 20V6" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="26" cy="6" r="3" fill="#06B6D4"/>
+              </svg>
+            </span>
+            <span class="brand__name">NIVRO</span>
+          </a>
+          <p>
+            Fast unattended OS provisioning and reinstallation engine for KVM and VPS cloud servers. Cryptographically signed execution with live telemetry.
+          </p>
+        </div>
+
+        <div class="footer__col">
+          <h4>Platform</h4>
+          <ul>
+            <li><a href="#systems">System Catalog (20)</a></li>
+            <li><a href="#how">How It Works</a></li>
+            <li><a href="#pricing">Plans &amp; Pricing</a></li>
+            <li><a href="#security">Payload Security</a></li>
+          </ul>
+        </div>
+
+        <div class="footer__col">
+          <h4>Distributions</h4>
+          <ul>
+            <li><a href="#systems">Windows 11 Enterprise LTSC</a></li>
+            <li><a href="#systems">Windows Server 2025 / 2022</a></li>
+            <li><a href="#systems">Ubuntu 24.04 / Debian 12</a></li>
+            <li><a href="#systems">Rocky 9 / AlmaLinux 9 / Kali</a></li>
+          </ul>
+        </div>
+
+        <div class="footer__col">
+          <h4>Official Channels</h4>
+          <ul>
+            <li><a href="https://t.me/V_X_L1" target="_blank" rel="noopener">Telegram: @V_X_L1</a></li>
+            <li><a href="https://github.com/hamzavxl/NIVRO" target="_blank" rel="noopener">GitHub Release Repo</a></li>
+            <li><a href="https://hamzavxl.github.io/NIVRO/reinstall.sh" target="_blank" rel="noopener">Bootstrapper (reinstall.sh)</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer__bottom">
+        <span>&copy; 2026 NIVRO Cloud Infrastructure. All rights reserved.</span>
+        <span class="mono">HMAC-SHA256 PAYLOAD GATE &middot; ZERO PLAINTEXT FLAGS</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const WIN_SVG = `<svg viewBox="0 0 24 24" width="32" height="32" fill="#0078D4"><path d="M2 3.5L10.5 2.3V11.2H2V3.5ZM11.8 2.1L22 0.7V11.2H11.8V2.1ZM2 12.5H10.5V21.5L2 20.3V12.5ZM11.8 12.5H22V23.1L11.8 21.7V12.5Z"/></svg>`;
+    const LINUX_SVG = `<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#B4740B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><polyline points="7 9 10 12 7 15"/><line x1="12" y1="15" x2="17" y2="15"/></svg>`;
+
+    const OS_LIST = [
+      { id: "win11-ltsc", name: "Windows 11 Enterprise LTSC", family: "windows", ram: "2 GB RAM", disk: "15 GB Disk", free: false, desc: "Stripped enterprise desktop build with zero Cortana, Store, or telemetry bloatware." },
+      { id: "winserver-2025", name: "Windows Server 2025 Datacenter", family: "windows", ram: "2 GB RAM", disk: "16 GB Disk", free: false, desc: "Latest Microsoft datacenter kernel with VirtIO storage acceleration and Stealth RDP." },
+      { id: "winserver-2022", name: "Windows Server 2022 Datacenter", family: "windows", ram: "2 GB RAM", disk: "14 GB Disk", free: false, desc: "Battle-tested production Windows Server with automated network route healing." },
+      { id: "win10-ltsc", name: "Windows 10 Enterprise LTSC", family: "windows", ram: "1.5 GB RAM", disk: "12 GB Disk", free: false, desc: "Ultra-stable long-term servicing channel build optimized for low-memory KVM nodes." },
+      { id: "winserver-2019", name: "Windows Server 2019 Datacenter", family: "windows", ram: "1.5 GB RAM", disk: "12 GB Disk", free: false, desc: "High-compatibility server image tuned for legacy and modern enterprise workloads." },
+      { id: "winserver-2016", name: "Windows Server 2016 Datacenter", family: "windows", ram: "1.5 GB RAM", disk: "12 GB Disk", free: false, desc: "Lightweight datacenter edition with pre-injected Red Hat NetKVM and VioStor drivers." },
+      { id: "winserver-2012", name: "Windows Server 2012 R2", family: "windows", ram: "1 GB RAM", disk: "10 GB Disk", free: true, desc: "Minimal footprint Windows Server available on the Free Community Evaluation tier." },
+      { id: "win81-pro", name: "Windows 8.1 Professional", family: "windows", ram: "1 GB RAM", disk: "10 GB Disk", free: true, desc: "Fast, ultra-lightweight desktop Windows environment for 1 GB RAM VPS instances." },
+      { id: "win7-ent", name: "Windows 7 Enterprise SP1", family: "windows", ram: "1 GB RAM", disk: "10 GB Disk", free: false, desc: "Classic enterprise image with slipstreamed VirtIO hypervisor and USB 3.0 drivers." },
+      { id: "ubuntu-2404", name: "Ubuntu 24.04 LTS (Noble)", family: "linux", ram: "512 MB RAM", disk: "5 GB Disk", free: false, desc: "Clean upstream canonical server image with BBR congestion control and cloud kernel." },
+      { id: "ubuntu-2204", name: "Ubuntu 22.04 LTS (Jammy)", family: "linux", ram: "512 MB RAM", disk: "5 GB Disk", free: false, desc: "Industry-standard LTS Linux environment stripped of provider monitoring agents." },
+      { id: "debian-12", name: "Debian 12 (Bookworm)", family: "linux", ram: "384 MB RAM", disk: "3 GB Disk", free: false, desc: "Pure minimal Debian netboot installation with hardened SSH and static IP preservation." },
+      { id: "debian-11", name: "Debian 11 (Bullseye)", family: "linux", ram: "384 MB RAM", disk: "3 GB Disk", free: false, desc: "Rock-solid minimal Debian server foundation for container and proxy nodes." },
+      { id: "alpine-321", name: "Alpine Linux 3.21 Minimal", family: "linux", ram: "128 MB RAM", disk: "1 GB Disk", free: true, desc: "Ultra-minimal musl/BusyBox Linux OS. Included in the Free Community Evaluation tier." },
+      { id: "rocky-9", name: "Rocky Linux 9 Enterprise", family: "linux", ram: "1 GB RAM", disk: "8 GB Disk", free: false, desc: "100% bug-for-bug RHEL 9 compatible enterprise operating system." },
+      { id: "almalinux-9", name: "AlmaLinux 9 Enterprise", family: "linux", ram: "1 GB RAM", disk: "8 GB Disk", free: false, desc: "Production-grade RHEL 9 binary compatible distribution for cloud infrastructure." },
+      { id: "fedora-41", name: "Fedora Server 41", family: "linux", ram: "1 GB RAM", disk: "6 GB Disk", free: false, desc: "Modern Linux kernel and cutting-edge system packages with automated LVM partitioning." },
+      { id: "arch-latest", name: "Arch Linux Rolling", family: "linux", ram: "512 MB RAM", disk: "4 GB Disk", free: false, desc: "Clean rolling-release base system bootstrapped directly from upstream mirrors." },
+      { id: "kali-rolling", name: "Kali Linux Rolling", family: "linux", ram: "1.5 GB RAM", disk: "12 GB Disk", free: false, desc: "Unattended security auditing and penetration testing platform for cloud nodes." },
+      { id: "openeuler-2403", name: "openEuler 24.03 LTS", family: "linux", ram: "1 GB RAM", disk: "6 GB Disk", free: false, desc: "High-throughput enterprise Linux kernel tuned for multi-core server hardware." }
+    ];
+
+    function renderOsGrid(filter) {
+      const grid = document.getElementById("osGrid");
+      const items = OS_LIST.filter(item => {
+        if (filter === "all") return true;
+        if (filter === "free") return item.free;
+        return item.family === filter;
+      });
+      grid.innerHTML = items.map(os => `
+        <div class="os-card os-card--${os.family}">
+          <div>
+            <div class="os-card__top">
+              <span class="os-card__logo">${os.family === "windows" ? WIN_SVG : LINUX_SVG}</span>
+              <span class="pill pill--${os.family}">${os.family}</span>
+            </div>
+            <div class="os-card__name">${os.name}</div>
+            <div class="os-card__id">Template: ${os.id}</div>
+            <p class="os-card__desc">${os.desc}</p>
+          </div>
+          <div class="os-card__badges">
+            <span class="pill pill--ram">${os.ram}</span>
+            <span class="pill">${os.disk}</span>
+            ${os.free ? `<span class="pill pill--free">FREE TIER</span>` : `<span class="pill pill--tag">STANDARD / PRIVATE</span>`}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function filterOs(type, btn) {
+      document.querySelectorAll("#osTabs .tab").forEach(t => t.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      renderOsGrid(type);
+    }
+
+    function copyPayloadCmd() {
+      const cmd = "curl -sSL https://hamzavxl.github.io/NIVRO/reinstall.sh | bash -s -- --payload <SIGNED-PAYLOAD-HASH>";
+      navigator.clipboard.writeText(cmd);
+      const btn = document.getElementById("copyBtn");
+      btn.textContent = "Copied!";
+      setTimeout(() => { btn.textContent = "Copy"; }, 1800);
+    }
+
+    let simTimer = null;
+    function runTermSim() {
+      if (simTimer) clearInterval(simTimer);
+      const body = document.getElementById("simBody");
+      const prog = document.getElementById("simProg");
+      body.innerHTML = "";
+      prog.style.width = "0%";
+
+      const steps = [
+        { pct: 10, html: `<span class="pr">root@kvm-node:~#</span> <span class="cmd">curl -sSL https://hamzavxl.github.io/NIVRO/reinstall.sh | bash -s -- --payload NVRO_eyJvc...9f2a</span>\n` },
+        { pct: 25, html: `<span class="ac">[*] NIVRO Security Gate:</span> Validating HMAC-SHA256 Payload Signature...\n<span class="ok">[+] Signature Verified:</span> Authenticity &amp; Integrity Confirmed.\n` },
+        { pct: 45, html: `<span class="ac"> [>] Target OS Profile:</span> windows (Windows 11 Enterprise LTSC)\n<span class="ac"> [>] Access Port:</span>      22 (Linux SSH Camouflage / Stealth Mode)\n` },
+        { pct: 65, html: `<span class="ok">[+] Telemetry Hook:</span>    STARTED (25%) &rarr; RUNNING_SCRIPT (50%) sent to console.\n<span class="ac">[*] Network Auto-Heal:</span> Static IPv4 &amp; Gateway preserved in RAM.\n` },
+        { pct: 85, html: `<span class="ac">[*] VirtIO Drivers:</span>   Injecting Red Hat VioStor &amp; NetKVM into boot.wim...\n<span class="ok">[+] Telemetry Hook:</span>    STREAMING_IMAGE (75%) &rarr; COMPLETED (100%).\n` },
+        { pct: 100, html: `<span class="ok">[+] Unattended OS Ready:</span> Rebooting into kexec installer now... <span class="cursor"></span>` }
+      ];
+
+      let i = 0;
+      simTimer = setInterval(() => {
+        if (i >= steps.length) {
+          clearInterval(simTimer);
+          return;
+        }
+        prog.style.width = steps[i].pct + "%";
+        body.innerHTML += steps[i].html;
+        i++;
+      }, 650);
+    }
+
+    renderOsGrid("all");
+    runTermSim();
+  </script>
+</body>
+</html>
