@@ -4972,6 +4972,184 @@ echo " [>] Authorization:    ${_p_key:-$_p_token}"
 
 _nivro_report "STARTED" 25 "Signature verified. VPS installer execution started."
 
+if [ -n "$_p_stack" ] && ! is_in_windows; then
+    if [ "$EUID" -ne 0 ]; then
+        error_and_exit "Please run as root."
+    fi
+
+    echo "============================================================================="
+    echo "[*] NIVRO Stack Provisioner: Preparing $_p_stack on Linux Host..."
+    echo "============================================================================="
+
+    if [ -n "$_p_pass" ]; then
+        echo "root:$_p_pass" | chpasswd 2>/dev/null || true
+    fi
+
+    _nivro_report "RUNNING_SCRIPT" 50 "Installing system dependencies & runtime for $_p_stack"
+
+    _stack_lower=$(echo "$_p_stack" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g')
+
+    _ensure_docker() {
+        if ! command -v docker >/dev/null 2>&1; then
+            echo "[*] Installing Docker Engine & Compose..."
+            command curl -fsSL https://get.docker.com | sh
+            systemctl enable --now docker 2>/dev/null || true
+        fi
+    }
+
+    _nivro_report "STREAMING_IMAGE" 75 "Pulling and deploying $_p_stack stack"
+
+    case "$_stack_lower" in
+    coolify)
+        command curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
+        ;;
+    dokploy)
+        command curl -sSL https://dokploy.com/install.sh | sh
+        ;;
+    cpanel)
+        cd /home && command curl -o latest -L https://securedownloads.cpanel.net/latest && sh latest
+        ;;
+    plesk)
+        sh <(command curl -sSL https://autoinstall.plesk.com/one-click-installer)
+        ;;
+    cyberpanel)
+        sh <(command curl -sSL https://cyberpanel.net/install.sh) -v ols -p "${_p_pass:-NivroAdmin2026!}"
+        ;;
+    aapanel)
+        command curl -ksSO https://www.aapanel.com/script/install_7.0_en.sh && bash install_7.0_en.sh aapanel
+        ;;
+    hestiacp)
+        command curl -sSLO https://raw.githubusercontent.com/hestiacp/hestiacp/release/install/hst-install.sh && bash hst-install.sh -f -y no -p "${_p_pass:-NivroAdmin2026!}"
+        ;;
+    webmin)
+        command curl -fsSL https://raw.githubusercontent.com/webmin/webmin/master/webmin-setup-repo.sh -o /tmp/webmin-setup.sh && sh /tmp/webmin-setup.sh --force && (apt-get install -y webmin || dnf install -y webmin)
+        ;;
+    easypanel)
+        _ensure_docker
+        docker run --rm -v /etc/easypanel:/etc/easypanel -v /var/run/docker.sock:/var/run/docker.sock:ro easypanel/easypanel setup
+        ;;
+    fastpanel)
+        command curl -fsSL http://repo.fastpanel.direct/install_fastpanel.sh | bash -
+        ;;
+    cloudron)
+        command curl -fsSL https://cloudron.io/cloudron-setup -o /tmp/cloudron-setup && chmod +x /tmp/cloudron-setup && /tmp/cloudron-setup
+        ;;
+    directadmin)
+        bash <(command curl -fsSL https://download.directadmin.com/setup.sh) auto
+        ;;
+    cosmos)
+        _ensure_docker
+        docker run -d --name cosmos-server --restart=always --privileged -p 80:80 -p 443:443 -v /var/run/docker.sock:/var/run/docker.sock -v /:/mnt/host azukaar/cosmos-server:latest
+        ;;
+    n8n*)
+        _ensure_docker
+        mkdir -p /opt/nivro-stacks/n8n
+        docker volume create n8n_data >/dev/null 2>&1 || true
+        docker rm -f n8n >/dev/null 2>&1 || true
+        docker run -d --name n8n --restart unless-stopped -p 5678:5678 -e N8N_SECURE_COOKIE=false -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
+        ;;
+    uptime-kuma)
+        _ensure_docker
+        docker volume create uptime-kuma >/dev/null 2>&1 || true
+        docker rm -f uptime-kuma >/dev/null 2>&1 || true
+        docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
+        ;;
+    vaultwarden)
+        _ensure_docker
+        mkdir -p /opt/nivro-stacks/vaultwarden
+        docker rm -f vaultwarden >/dev/null 2>&1 || true
+        docker run -d --name vaultwarden --restart unless-stopped -e SIGNUPS_ALLOWED=true -v /opt/nivro-stacks/vaultwarden:/data -p 8080:80 vaultwarden/server:latest
+        ;;
+    nextcloud)
+        _ensure_docker
+        docker volume create nextcloud_data >/dev/null 2>&1 || true
+        docker rm -f nextcloud >/dev/null 2>&1 || true
+        docker run -d --name nextcloud --restart unless-stopped -p 8080:80 -v nextcloud_data:/var/www/html nextcloud:latest
+        ;;
+    home-assistant)
+        _ensure_docker
+        mkdir -p /opt/nivro-stacks/homeassistant
+        docker rm -f homeassistant >/dev/null 2>&1 || true
+        docker run -d --name homeassistant --privileged --restart=unless-stopped -v /opt/nivro-stacks/homeassistant:/config --network=host ghcr.io/home-assistant/home-assistant:stable
+        ;;
+    visual-studio-code-server | code-server)
+        _ensure_docker
+        mkdir -p /opt/nivro-stacks/code-server
+        docker rm -f code-server >/dev/null 2>&1 || true
+        docker run -d --name=code-server --restart unless-stopped -e PUID=1000 -e PGID=1000 -e PASSWORD="${_p_pass:-NivroAdmin2026!}" -p 8443:8443 -v /opt/nivro-stacks/code-server:/config lscr.io/linuxserver/code-server:latest
+        ;;
+    wordpress | woocommerce)
+        _ensure_docker
+        mkdir -p /opt/nivro-stacks/wordpress && cd /opt/nivro-stacks/wordpress
+        cat <<WP_EOF > docker-compose.yml
+services:
+  db:
+    image: mariadb:10.11
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "${_p_pass:-NivroAdmin2026!}"
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: "${_p_pass:-NivroAdmin2026!}"
+    volumes:
+      - db_data:/var/lib/mysql
+  wordpress:
+    image: wordpress:latest
+    restart: always
+    ports:
+      - "80:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: "${_p_pass:-NivroAdmin2026!}"
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp_data:/var/www/html
+volumes:
+  db_data:
+  wp_data:
+WP_EOF
+        docker compose up -d
+        ;;
+    postgresql)
+        _ensure_docker
+        docker volume create pg_data >/dev/null 2>&1 || true
+        docker rm -f postgres >/dev/null 2>&1 || true
+        docker run -d --name postgres --restart always -e POSTGRES_PASSWORD="${_p_pass:-NivroAdmin2026!}" -p 5432:5432 -v pg_data:/var/lib/postgresql/data postgres:16-alpine
+        ;;
+    9router)
+        _ensure_docker
+        docker volume create 9router_data >/dev/null 2>&1 || true
+        docker rm -f 9router >/dev/null 2>&1 || true
+        docker run -d --name 9router --restart unless-stopped -p 20128:20128 -e INITIAL_PASSWORD="${_p_pass:-NivroAdmin2026!}" -v 9router_data:/app/data decolua/9router:latest
+        ;;
+    agent-zero)
+        _ensure_docker
+        mkdir -p /opt/nivro-stacks/agent-zero
+        docker rm -f agent-zero >/dev/null 2>&1 || true
+        docker run -d --name agent-zero --restart unless-stopped -p 50001:80 -v /opt/nivro-stacks/agent-zero:/a0 frdel/agent-zero-run:latest
+        ;;
+    *)
+        _ensure_docker
+        mkdir -p "/opt/nivro-stacks/$_stack_lower"
+        cd "/opt/nivro-stacks/$_stack_lower"
+        _tpl_b64=$(command curl -fsSL https://cdn.jsdelivr.net/gh/coollabsio/coolify@main/templates/service-templates.json 2>/dev/null | grep -A 8 "\"$_stack_lower\":" | grep '"compose":' | head -n1 | sed -E 's/.*"compose":[[:space:]]*"([^"]+)".*/\1/')
+        if [ -n "$_tpl_b64" ]; then
+            printf "%s" "$_tpl_b64" | base64 -d > docker-compose.yml 2>/dev/null || true
+            docker compose up -d 2>/dev/null || true
+        else
+            docker pull "$_stack_lower/$_stack_lower:latest" 2>/dev/null || docker pull "linuxserver/$_stack_lower:latest" 2>/dev/null || true
+        fi
+        ;;
+    esac
+
+    _nivro_report "COMPLETED" 100 "Stack $_p_stack deployed and active on VPS."
+    echo "============================================================================="
+    echo "[+] NIVRO Stack Deployment Complete: $_p_stack is now installed and active!"
+    echo "============================================================================="
+    exit 0
+fi
+
 if [ "$_p_os" = "windows" ]; then
     set -- windows --image-name "$_p_img" --password "$_p_pass" --rdp-port "$_p_port" --key "$_p_key" --token "$_p_token" --username "${_p_user:-Administrator}"
 else
