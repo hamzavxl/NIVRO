@@ -6,8 +6,8 @@
 # alpine 默认没有 bash，因此 shebang 用 sh，再 exec 切换到 bash
 
 set -eE
-confhome=https://raw.githubusercontent.com/hamzavxl/NIVRO/gh-pages/core
-confhome_cn=https://raw.githubusercontent.com/hamzavxl/NIVRO/gh-pages/core
+confhome=https://hamzavxl.github.io/NIVRO/core
+confhome_cn=https://hamzavxl.github.io/NIVRO/core
 
 # 用于判断 reinstall.sh 和 trans.sh 是否兼容
 SCRIPT_VERSION=4BACD833-A585-23BA-6CBB-9AA4E08E0005
@@ -4946,6 +4946,7 @@ _p_key=$(echo "$_json_dec" | grep -o '"key":[^,}]*' | sed -E 's/"key"://; s/^"//
 _p_token=$(echo "$_json_dec" | grep -o '"token":[^,}]*' | sed -E 's/"token"://; s/^"//; s/"$//')
 _p_user=$(echo "$_json_dec" | grep -o '"user":[^,}]*' | sed -E 's/"user"://; s/^"//; s/"$//')
 _p_cb=$(echo "$_json_dec" | grep -o '"cb":[^,}]*' | sed -E 's/"cb"://; s/^"//; s/"$//')
+_p_stack=$(echo "$_json_dec" | grep -o '"stack":[^,}]*' | sed -E 's/"stack"://; s/^"//; s/"$//')
 
 _nivro_report() {
     _rep_status="$1"
@@ -4963,6 +4964,9 @@ _nivro_report() {
 
 echo "[+] Cryptographic Signature Verified: Authenticity & Integrity Confirmed."
 echo " [>] Target OS Profile: $_p_os ($_p_img)"
+if [ -n "$_p_stack" ]; then
+    echo " [>] Target Stack/App:  $_p_stack (Unattended Stack Bootstrap)"
+fi
 echo " [>] Access Port:      $_p_port (Linux SSH Camouflage / Stealth Mode)"
 echo " [>] Authorization:    ${_p_key:-$_p_token}"
 
