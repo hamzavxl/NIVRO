@@ -4946,6 +4946,7 @@ _p_key=$(echo "$_json_dec" | grep -o '"key":[^,}]*' | sed -E 's/"key"://; s/^"//
 _p_token=$(echo "$_json_dec" | grep -o '"token":[^,}]*' | sed -E 's/"token"://; s/^"//; s/"$//')
 _p_user=$(echo "$_json_dec" | grep -o '"user":[^,}]*' | sed -E 's/"user"://; s/^"//; s/"$//')
 _p_cb=$(echo "$_json_dec" | grep -o '"cb":[^,}]*' | sed -E 's/"cb"://; s/^"//; s/"$//')
+_p_stack=$(echo "$_json_dec" | grep -o '"stack":[^,}]*' | sed -E 's/"stack"://; s/^"//; s/"$//')
 
 _nivro_report() {
     _rep_status="$1"
@@ -4963,6 +4964,9 @@ _nivro_report() {
 
 echo "[+] Cryptographic Signature Verified: Authenticity & Integrity Confirmed."
 echo " [>] Target OS Profile: $_p_os ($_p_img)"
+if [ -n "$_p_stack" ]; then
+    echo " [>] Target Stack/App:  $_p_stack (Unattended Stack Bootstrap)"
+fi
 echo " [>] Access Port:      $_p_port (Linux SSH Camouflage / Stealth Mode)"
 echo " [>] Authorization:    ${_p_key:-$_p_token}"
 

@@ -55,12 +55,14 @@ Target Server (KVM / Xen / Hyper-V / Bare-Metal)
 
 ---
 
-## Supported Distributions
+## Supported Operating Systems, Control Panels &amp; Applications
 
-| Family | Supported Editions | Min RAM | Min Disk |
+| Category | Supported Profiles &amp; Stacks | Min RAM | Min Disk |
 | :--- | :--- | :--- | :--- |
-| **Windows** | Windows 11 Enterprise LTSC, Windows 10 Enterprise LTSC, Windows Server 2025 / 2022 / 2019 / 2016 / 2012 R2, Windows 8.1 Pro | 1 GB – 2 GB | 10 GB – 16 GB |
-| **Linux** | Ubuntu 24.04 / 22.04 LTS, Debian 12 / 11, Alpine Linux 3.21, Rocky Linux 9, AlmaLinux 9, Fedora 41, Arch Linux, Kali Linux, openEuler | 128 MB – 1.5 GB | 1 GB – 12 GB |
+| **Plain OS (Windows)** | Windows 11 Enterprise LTSC, Windows 10 Enterprise LTSC, Windows Server 2025 / 2022 / 2019 / 2016 / 2012 R2, Windows 8.1 Pro | 1 GB – 2 GB | 10 GB – 16 GB |
+| **Plain OS (Linux)** | AlmaLinux, Debian, Rocky Linux, Ubuntu LTS, Alpine Linux, Arch Linux, CentOS, CloudLinux, Fedora Cloud, Kali Linux, NixOS 26.05, openSUSE, openEuler | 128 MB – 1.5 GB | 1 GB – 12 GB |
+| **Control Panels (19)** | AdminBolt, cPanel, Plesk, CloudPanel, Coolify, Dokploy, CyberPanel, DirectAdmin, KUSANAGI 9, Webmin, Webuzo, aaPanel, TinyCP, Cloudron, Cosmos, Easypanel, FASTPANEL, HestiaCP, ServerKit | 1 GB – 2 GB | 10 GB – 20 GB |
+| **Applications (1,060+)** | 9router, Agent Zero, Buzz, Dify, Docker and Traefik, Hermes Agent, Home Assistant, IceWarp, Immich, n8n, Nextcloud, OpenClaw, OpenLiteSpeed and Node.js, Paperclip, PostgreSQL, Uptime Kuma, Vaultwarden, Visual Studio Code Server, WooCommerce, WordPress, plus 1,040+ self-hosted stacks ([Browse full catalog](https://hamzavxl.github.io/NIVRO/)) | 512 MB – 2 GB | 5 GB – 15 GB |
 
 ---
 
